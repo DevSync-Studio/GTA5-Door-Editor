@@ -1,0 +1,1260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CDoorTuningFile>
+ <!-- NOTE: NamedTuningArray is where you setup the definitions of how a door with that type should act -->
+ <NamedTuningArray itemType="hash_243B5E8B">
+  <Item>
+   <Name>BarrierArmCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-3" z="-3.5" />
+    <Flags>DontCloseWhenTouched AutoOpensForSPVehicleWithPedsOnly AutoOpensForMPVehicleWithPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="5" />
+    <AutoOpenRate value="0.75" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-3" y="-3" z="-1.5" />
+     <max x="3" y="3" z="4.25" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="true" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="0.01" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>ChopShopGarageCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-2.6" z="-2" />
+    <Flags />
+    <AutoOpenRadiusModifier value="0.75" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-6.25" y="-19.975" z="0" />
+     <max x="2.975" y="11.125" z="3.35" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>CultistGate</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags />
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="20" />
+    <WeaponImpulseMultiplier value="0" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>DefaultBarrierArm</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>AutoOpensForSPVehicleWithPedsOnly AutoOpensForMPVehicleWithPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="1.5" />
+    <AutoOpenRate value="0.75" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="true" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>DefaultGarage</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="-2" />
+    <Flags />
+    <AutoOpenRadiusModifier value="1.5" />
+    <AutoOpenRate value="0.275" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>DefaultGarageBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-2.6" z="-2" />
+    <Flags />
+    <AutoOpenRadiusModifier value="0.75" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>DefaultGarageCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="-2" />
+    <Flags>DontCloseWhenTouched</Flags>
+    <AutoOpenRadiusModifier value="1.5" />
+    <AutoOpenRate value="0.275" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-2" y="-5.95" z="-1" />
+     <max x="1.9" y="5.95" z="3.675" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>DefaultSlidingHorizontal</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags />
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="2" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>DefaultSlidingVertical</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags />
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>DefaultStandard</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>DelayDoorClosingForPlayer</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>DefaultStandardLatchShut</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>DelayDoorClosingForPlayer</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="true" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>NoRotationLimitStandardLatchShut</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>DelayDoorClosingForPlayer</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="true" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="89" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>FBISecurityGate</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags />
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="2.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-0.125" y="-1.725" z="-0.495" />
+     <max x="0.525" y="1.725" z="0.65" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>FenceGate</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>DontCloseWhenTouched IgnoreOpenDoorTaskEdgeLerp</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.25" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="true" />
+    <BreakingImpulse value="10000" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="0.4" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>FragBarrierArm</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>AutoOpensForSPVehicleWithPedsOnly AutoOpensForMPVehicleWithPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="1.5" />
+    <AutoOpenRate value="0.75" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>FragBarrierArmCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>AutoOpensForSPVehicleWithPedsOnly AutoOpensForMPVehicleWithPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="1.5" />
+    <AutoOpenRate value="0.75" />
+    <AutoOpenCosineAngleBetweenThreshold value="0.707" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-2.575" y="-12" z="-1.275" />
+     <max x="3.3" y="0" z="4.15" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="true" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>FranklinGarage2</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="-2" />
+    <Flags>AutoOpensForSPPlayerPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="1.5" />
+    <AutoOpenRate value="0.275" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-3.8" y="-6.3" z="0" />
+     <max x="3.8" y="8.8" z="6" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>FranklinGarageCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-3.5" z="-2" />
+    <Flags>AutoOpensForSPPlayerPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="0.75" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-2.45" y="-5" z="0" />
+     <max x="1.8" y="11" z="3.35" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>GangGarageCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-3.5" z="-2" />
+    <Flags />
+    <AutoOpenRadiusModifier value="0.75" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-3" y="-1" z="0" />
+     <max x="3" y="11" z="3.35" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>HeavyVaultDoor</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>DontCloseWhenTouched IgnoreOpenDoorTaskEdgeLerp</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="true" />
+    <MassMultiplier value="15" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="170" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenNegDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>HeavyWoodDoor</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>IgnoreOpenDoorTaskEdgeLerp</Flags>
+    <AutoOpenRadiusModifier value="1.2" />
+    <AutoOpenRate value="0.2" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>LargeFenceGate</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>DelayDoorClosingForPlayer IgnoreOpenDoorTaskEdgeLerp</Flags>
+    <AutoOpenRadiusModifier value="1.2" />
+    <AutoOpenRate value="0.2" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="true" />
+    <BreakingImpulse value="40000" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="0.1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>LargeGate</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>IgnoreOpenDoorTaskEdgeLerp</Flags>
+    <AutoOpenRadiusModifier value="0.985" />
+    <AutoOpenRate value="0.51" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="10" />
+    <WeaponImpulseMultiplier value="0.1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="0" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>MichaelGarageCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-2.6" z="-2" />
+    <Flags>AutoOpensForSPPlayerPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="0.75" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-3.25" y="-4.175" z="0" />
+     <max x="3" y="11.225" z="3.35" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>ReduceOpenGarage</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="-2" />
+    <Flags />
+    <AutoOpenRadiusModifier value="0.635" />
+    <AutoOpenRate value="0.275" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>SlidingHorizontalExtendedRange</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags />
+    <AutoOpenRadiusModifier value="1.8" />
+    <AutoOpenRate value="2.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>SlidingHorizontalSPVehiclesAndMPPlayerPeds</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>AutoOpensForSPVehicleWithPedsOnly AutoOpensForMPPlayerPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>SlidingHorizontalVehiclesOnly</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>AutoOpensForSPVehicleWithPedsOnly AutoOpensForMPVehicleWithPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>SprayDoors</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags />
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="1" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1.0099" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>StandardHeavy</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags />
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="false" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="15" />
+    <WeaponImpulseMultiplier value="0.01" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>TollBarrierArmCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-3" z="-3.5" />
+    <Flags>DontCloseWhenTouched AutoOpensForAllVehicles</Flags>
+    <AutoOpenRadiusModifier value="5" />
+    <AutoOpenRate value="0.75" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-3" y="-3" z="-1.5" />
+     <max x="3" y="3" z="4.25" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="true" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="0.01" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>TrevorGarageCustomBox</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-3.5" z="-2" />
+    <Flags>AutoOpensForSPPlayerPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="0.75" />
+    <AutoOpenRate value="0.5" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-2.75" y="-5" z="0" />
+     <max x="1.85" y="15.5" z="3.35" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>TowTruckYardSlidingHorizontal</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>AutoOpensForSPPlayerPedsOnly AutoOpensForMPPlayerPedsOnly</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="2.25" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-3" y="-6.25" z="-1.5" />
+     <max x="3" y="8" z="3" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>SlidingHorizontalPoliceSPVehiclesAndMPPlayerPeds</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="0" z="0" />
+    <Flags>AutoOpensForSPPlayerPedsOnly AutoOpensForMPPlayerPedsOnly AutoOpensForLawEnforcement</Flags>
+    <AutoOpenRadiusModifier value="1" />
+    <AutoOpenRate value="2.25" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="false" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="true" />
+    <TriggerBoxMinMax>
+     <min x="-3" y="-6.25" z="-1.5" />
+     <max x="3" y="8" z="3" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+  <Item>
+   <Name>SupermodGarage</Name>
+   <Tuning>
+    <AutoOpenVolumeOffset x="0" y="-1.675" z="-2.45" />
+    <Flags />
+    <AutoOpenRadiusModifier value="2.763" />
+    <AutoOpenRate value="1" />
+    <AutoOpenCosineAngleBetweenThreshold value="-1" />
+    <AutoOpenCloseRateTaper value="true" />
+    <UseAutoOpenTriggerBox value="true" />
+    <CustomTriggerBox value="false" />
+    <TriggerBoxMinMax>
+     <min x="0" y="0" z="0" />
+     <max x="0" y="0" z="0" />
+    </TriggerBoxMinMax>
+    <BreakableByVehicle value="false" />
+    <BreakingImpulse value="0" />
+    <ShouldLatchShut value="false" />
+    <MassMultiplier value="1" />
+    <WeaponImpulseMultiplier value="1" />
+    <RotationLimitAngle value="0" />
+    <TorqueAngularVelocityLimit value="5" />
+    <StdDoorRotDir>StdDoorOpenBothDir</StdDoorRotDir>
+   </Tuning>
+  </Item>
+ </NamedTuningArray>
+ <!-- NOTE: ModelToTuneMapping is where you tie your door model to the desired NamedTuningArray Item -->
+ <ModelToTuneMapping itemType="hash_37ADF737">
+  <Item>
+   <ModelName>bh1_48_gate_1</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_arm_gate_l</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_bh1_48_backdoor_l</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_bh1_48_backdoor_r</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_ch_025c_g_door_01</ModelName>
+   <TuningName>FranklinGarage2</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_com_gar_door_01</ModelName>
+   <TuningName>DefaultGarageCustomBox</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_com_ls_door_01</ModelName>
+   <TuningName>ChopShopGarageCustomBox</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_cs4_05_tdoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_cs4_10_tr_gd_01</ModelName>
+   <TuningName>TrevorGarageCustomBox</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_door_balcony_left</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_door_balcony_right</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_01</ModelName>
+   <TuningName>SlidingHorizontalSPVehiclesAndMPPlayerPeds</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_01b</ModelName>
+   <TuningName>SlidingHorizontalSPVehiclesAndMPPlayerPeds</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_03_l</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_03_r</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_04_l</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_04_r</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_05_r</ModelName>
+   <TuningName>LargeGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_06_l</ModelName>
+   <TuningName>StandardHeavy</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_06_r</ModelName>
+   <TuningName>StandardHeavy</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_11</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_01gate1</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_02gate1</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_02gate5</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_02gate6_l</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_02gate6_r</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_02gate7</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_03gate4</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_03gate5</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_04gate1</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_06gate2</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_06gate3</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_07gate1</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_07gate1</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_07gate2</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_07gate3</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fnclink_09gate1</ModelName>
+   <TuningName>LargeFenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fncres_02_gate1</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fncres_03gate1</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_fncwood_07gate1</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_gar_door_03_ld</ModelName>
+   <TuningName>GangGarageCustomBox</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_gate_cult_01_l</ModelName>
+   <TuningName>CultistGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_gate_cult_01_r</ModelName>
+   <TuningName>CultistGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_gate_tep_01_l</ModelName>
+   <TuningName>LargeGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_gate_tep_01_r</ModelName>
+   <TuningName>LargeGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_gate_farm_01a</ModelName>
+   <TuningName>FenceGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_ld_bankdoors_01</ModelName>
+   <TuningName>HeavyWoodDoor</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_ld_garaged_01</ModelName>
+   <TuningName>MichaelGarageCustomBox</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_lrggate_02_ld</ModelName>
+   <TuningName>LargeGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_police_door_l</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_police_door_r</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_sc1_21_g_door_01</ModelName>
+   <TuningName>FranklinGarageCustomBox</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_sec_barrier_ld_01a</ModelName>
+   <TuningName>FragBarrierArmCustomBox</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_sec_barrier_ld_02a</ModelName>
+   <TuningName>TollBarrierArmCustomBox</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_arm_secdoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_bk_vaultdoor</ModelName>
+   <TuningName>HeavyVaultDoor</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_bl_doorsl_l</ModelName>
+   <TuningName>SlidingHorizontalExtendedRange</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_bl_doorsl_r</ModelName>
+   <TuningName>SlidingHorizontalExtendedRange</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_cd_entrydoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_cor_firedoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_cor_firedoorwide</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_fa_dinedoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_fa_frontdoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_fa_roomdoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_fbisecgate</ModelName>
+   <TuningName>FBISecurityGate</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_fib_door3</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_gc_door01</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_gc_door02</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_gc_door03</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_gc_door04</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_lostdoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_mm_door</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_mm_doorm_l</ModelName>
+   <TuningName>NoRotationLimitStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_mm_doorm_r</ModelName>
+   <TuningName>NoRotationLimitStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_mm_doorw</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_ph_gendoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_ph_gendoor002</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_ph_gendoor003</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_phroofdoor</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_spraydoor</ModelName>
+   <TuningName>SprayDoors</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_ss_door02</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_ss_door5_l</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_ss_door5_r</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_ss_door7</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_ss_door8</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_trev_door</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_trev_door</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_trev_doorbath</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_trev_doorfront</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>v_ilev_trevtrailerdr</ModelName>
+   <TuningName>DefaultStandardLatchShut</TuningName>
+  </Item>
+  <Item>
+   <ModelName>vb_35_lifeguarddoor2</ModelName>
+   <TuningName>ReduceOpenGarage</TuningName>
+  </Item>
+  <Item>
+   <ModelName>prop_facgate_08</ModelName>
+   <TuningName>TowTruckYardSlidingHorizontal</TuningName>
+  </Item>
+  <Item>
+   <ModelName>hei_prop_station_gate</ModelName>
+   <TuningName>SlidingHorizontalPoliceSPVehiclesAndMPPlayerPeds</TuningName>
+  </Item>
+  <Item>
+   <ModelName>lr_prop_supermod_door_01</ModelName>
+   <TuningName>SupermodGarage</TuningName>
+  </Item>
+ </ModelToTuneMapping>
+</CDoorTuningFile>
