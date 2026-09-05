@@ -25,11 +25,11 @@ export function UnsavedChangesBar({
   return (
     <div
       className={cn(
-        "pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center px-3 sm:px-5",
+        "pointer-events-none absolute inset-x-0 bottom-3 z-40 flex justify-center px-3 sm:px-5",
         className,
       )}
     >
-      <div className="pointer-events-auto flex w-full max-w-5xl items-center justify-between gap-6 rounded-lg border border-border bg-panel px-5 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.4)]">
+      <div className="pointer-events-auto flex w-full max-w-5xl items-center justify-between gap-6 rounded-lg border border-line-soft bg-panel-elevated px-5 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]">
         <div className="min-w-0">
           <p className="m-0 text-[13px] font-medium text-bright">Pending edits</p>
           <p className="m-0 mt-0.5 text-[12px] text-muted-foreground">{description}</p>

@@ -646,7 +646,7 @@ export const AudioView = memo(function AudioView({
             </div>
           </div>
 
-          <div className={cn("flex min-h-0 min-w-0 flex-col bg-editor", sessionDirty && "pb-16")}>
+          <div className="flex min-h-0 min-w-0 flex-col bg-editor">
             <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line-soft px-5 py-3">
               <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-2">

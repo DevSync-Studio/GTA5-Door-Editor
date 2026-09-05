@@ -838,7 +838,7 @@ export const TuningView = memo(function TuningView(props: {
               </div>
             </div>
 
-            <div className={cn("min-h-0 overflow-auto bg-editor", hasUnsaved && "pb-16")}>
+            <div className="min-h-0 overflow-auto bg-editor">
               {active === "door" && selectedMap ? (
                 <DoorDetail
                   key={selectedMap.model}
