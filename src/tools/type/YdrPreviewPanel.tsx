@@ -51,7 +51,6 @@ function matchesYdrName(expected: string, fileLabel: string, previewName?: strin
   return namesMatchHashOrString(expected, fileStem(fileLabel), previewName);
 }
 
-/** Accept `model.ytd`, `model+hidr.ytd`, `model_*.ytd`; hash names via jenk. */
 function matchesYtdName(expected: string, fileLabel: string, allowAnyIfHash = false): boolean {
   const want = expected.trim();
   if (!want) return false;
@@ -72,9 +71,7 @@ function matchesDropName(expected: string, fileLabel: string): boolean {
 
 function openAngleRad(tuning: DoorMotionTuning | null): number {
   const raw = tuning?.rotationLimitAngle ?? 0;
-  // doortuning uses 0 as "default"; game doors typically swing ~90°.
   if (!raw || raw <= 0) return Math.PI / 2;
-  // Values are usually radians; if someone stored degrees (> 2π), convert.
   return raw > Math.PI * 2 + 0.01 ? (raw * Math.PI) / 180 : raw;
 }
 
@@ -82,7 +79,6 @@ function dirSign(tuning: DoorMotionTuning | null, amount: number): number {
   const dir = tuning?.rotDir ?? "pos";
   if (dir === "neg") return -amount;
   if (dir === "both") {
-    // Preview positive half-cycle; real both-dir is physics-driven.
     return amount;
   }
   return amount;

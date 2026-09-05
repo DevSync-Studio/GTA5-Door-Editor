@@ -37,7 +37,6 @@ export function joaat(value: string): string {
   return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
-/** DoorAudioSettingsLink name: joaat of the door stem (without `d_`). Matches real DAT151 files. */
 export function doorAudioLinkName(doorName: string): string {
   const name = doorName.trim().toLowerCase();
   const stem = name.startsWith("d_") ? name.slice(2) : name;
@@ -117,7 +116,6 @@ export function nametableBytes(names: string[]): string {
   const out = new Set<string>();
   for (const raw of names.filter(Boolean)) {
     out.add(raw);
-    // Pair DoorAudioSettings (`d_...`) with its DoorAudioSettingsLink name automatically.
     if (/^d_/i.test(raw) && raw.length > 2) {
       out.add(doorAudioLinkName(raw));
     }

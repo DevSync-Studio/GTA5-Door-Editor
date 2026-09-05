@@ -26,7 +26,6 @@ function sameNameList(a: string[], b: string[]): boolean {
   return left.every((value, index) => value === right[index]);
 }
 
-/** Only the door settings names - link (`dasl_...`) names are added automatically on export. */
 function entriesFromAudioDoors(doorNames: string[]): string[] {
   const out: string[] = [];
   for (const raw of doorNames) {
@@ -125,7 +124,7 @@ export const NamesView = memo(function NamesView({
 
   const pickImport = async () => {
     const file = await openTextFile("Import nametable", [
-      { title: "Nametable", extensions: ["nametable", "txt"] },
+      { title: "DAT151 nametable", extensions: ["dat151.nametable", "nametable", "txt"] },
     ]);
     if (file) loadFile(file);
   };
@@ -230,9 +229,9 @@ export const NamesView = memo(function NamesView({
     try {
       const saved = await saveTextFileAs(
         "Export nametable",
-        "names.nametable",
+        "names.dat151.nametable",
         nametableBytes(next),
-        [{ title: "Nametable", extensions: ["nametable", "txt"] }],
+        [{ title: "DAT151 nametable", extensions: ["dat151.nametable", "nametable", "txt"] }],
       );
       if (!saved) return;
       setBaseline([...next]);
@@ -273,7 +272,7 @@ export const NamesView = memo(function NamesView({
 
   return (
     <WorkspaceShell
-      title="Nametable"
+      title="Nametables Generator"
       subtitle={importPath ? fileNameFromPath(importPath) : undefined}
       status={sessionDirty ? "unsaved" : null}
       actions={
@@ -457,7 +456,7 @@ export const NamesView = memo(function NamesView({
                   <section className="w-full shrink-0 rounded-lg border border-line-soft bg-panel/40 p-4 sm:p-5">
                     <h3 className="mb-1 text-[13px] font-medium tracking-tight text-muted-foreground">Identity</h3>
                     <p className="mb-4 m-0 text-[12px] leading-5 text-faint">
-                      Name kept in this session. Export / Replace import writes the .nametable (including auto dasl_ links).
+                      Name kept in this session. Export / Replace import writes the .dat151.nametable (including auto dasl_ links).
                     </p>
                     <div className="max-w-md">
                       <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">Name</Label>

@@ -182,15 +182,14 @@ export const AudioView = memo(function AudioView({
   useEffect(() => {
     onDirty(sessionDirty);
   }, [sessionDirty, onDirty]);
-
-  // Only reload draft when the selected door changes - never while typing.
+  
   useEffect(() => {
     if (!door) return;
     const current = assignments.find((row) => row.id === door.id) ?? blankAssignment(door.id);
     setDraft(current);
     setBaseline(current);
     setCustomName("");
-  }, [door?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- intentional: door switch only
+  }, [door?.id]);
 
   const shown = useMemo(
     () =>
@@ -341,7 +340,7 @@ export const AudioView = memo(function AudioView({
     try {
       const saved = await saveTextFileAs(
         "Export DAT151 REL",
-        "door_audio.dat151.rel.xml",
+        "game.dat151.rel.xml",
         buildExportXml(nextAssignments),
         [{ title: "REL XML", extensions: ["xml"] }],
       );
@@ -500,7 +499,7 @@ export const AudioView = memo(function AudioView({
 
   return (
     <WorkspaceShell
-      title={page === "presets" ? "Preset catalog" : "Door Audio"}
+      title={page === "presets" ? "Preset catalog" : "Door Audio Editor"}
       subtitle={
         page === "presets"
           ? undefined
@@ -534,7 +533,7 @@ export const AudioView = memo(function AudioView({
               onClick={() => void exportRel()}
             >
               <Download className="size-3.5" strokeWidth={1.75} />
-              Export
+              Export REL
             </Button>
             {importPath ? (
               <Button

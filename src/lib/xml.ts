@@ -33,10 +33,15 @@ export function setAttr(
 }
 
 export function setText(xml: string, tag: string, value: string): string {
-  return xml.replace(
-    new RegExp(`(<${tag}[^>]*>)[\\s\\S]*?(</${tag}>)`),
-    `$1${value}$2`,
-  );
+  const openClose = new RegExp(`(<${tag}\\b[^>]*>)[\\s\\S]*?(</${tag}>)`);
+  if (openClose.test(xml)) {
+    return xml.replace(openClose, `$1${value}$2`);
+  }
+  const selfClosing = new RegExp(`<${tag}\\b([^>]*?)\\s*/>`);
+  if (selfClosing.test(xml)) {
+    return xml.replace(selfClosing, `<${tag}$1>${value}</${tag}>`);
+  }
+  return xml;
 }
 
 export function blocksOf(xml: string, tag: string): string[] {
@@ -68,6 +73,14 @@ export function replaceItemAround(
   return xml.slice(0, span.start) + next + xml.slice(span.end);
 }
 
+export function insertBeforeClose(xml: string, closeTag: string, chunk: string): string {
+  const point = xml.indexOf(closeTag);
+  if (point < 0) throw new Error(`${closeTag.replace(/[<>/]/g, "")} was not found.`);
+  const before = xml.slice(0, point).replace(/\s+$/, "") + "\n";
+  const body = chunk.replace(/^[\r\n]+/, "").replace(/\s+$/, "") + "\n";
+  return before + body + xml.slice(point);
+}
+
 export function removeItemAround(
   xml: string,
   marker: string,
@@ -75,13 +88,15 @@ export function removeItemAround(
 ): string {
   const span = itemSpanAround(xml, marker, open);
   if (!span) throw new Error("Matching XML item was not found.");
-  return xml.slice(0, span.start) + xml.slice(span.end);
-}
-
-export function insertBeforeClose(xml: string, closeTag: string, chunk: string): string {
-  const point = xml.indexOf(closeTag);
-  if (point < 0) throw new Error(`${closeTag.replace(/[<>/]/g, "")} was not found.`);
-  return xml.slice(0, point) + chunk + xml.slice(point);
+  let { start, end } = span;
+  if (xml[end] === "\r") end += 1;
+  if (xml[end] === "\n") end += 1;
+  while (start > 0 && (xml[start - 1] === " " || xml[start - 1] === "\t")) start -= 1;
+  if (start > 0 && xml[start - 1] === "\n") {
+    start -= 1;
+    if (start > 0 && xml[start - 1] === "\r") start -= 1;
+  }
+  return xml.slice(0, start) + xml.slice(end);
 }
 
 export function escapeXml(value: string): string {

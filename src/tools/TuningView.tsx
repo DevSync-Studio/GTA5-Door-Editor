@@ -75,7 +75,7 @@ type EditorHandle = {
 };
 
 
-type TuningFileExtension = ".ymt" | ".xml";
+type TuningFileExtension = ".ymt" | ".ymt.pso.xml" | ".xml";
 
 interface TuningFilePayload {
   name: string;
@@ -83,8 +83,8 @@ interface TuningFilePayload {
   extension: TuningFileExtension;
 }
 
-const TUNING_FILE_EXTENSIONS = [".ymt", ".xml"] as const satisfies readonly TuningFileExtension[];
-const TUNING_FILE_ACCEPT = ".ymt,.xml";
+const TUNING_FILE_EXTENSIONS = [".ymt.pso.xml", ".ymt", ".xml"] as const satisfies readonly TuningFileExtension[];
+const TUNING_FILE_ACCEPT = ".ymt,.ymt.pso.xml,.xml";
 
 function getTuningExtension(fileName: string): TuningFileExtension | null {
   const lower = fileName.toLowerCase();
@@ -101,7 +101,7 @@ function isTuningFileName(fileName: string): boolean {
 async function readBrowserTuningFile(file: File): Promise<TuningFilePayload> {
   const extension = getTuningExtension(file.name);
   if (!extension) {
-    throw new Error("Unsupported file type. Use .ymt or .xml.");
+    throw new Error("Unsupported file type. Use .ymt or .ymt.pso.xml.");
   }
   const text = await file.text();
   return { name: file.name, text, extension };
@@ -142,7 +142,6 @@ function TuningDropZone({
     [onFile],
   );
 
-  // Tauri OS file drags often skip HTML5 drag events - mirror enter/over/leave for active UI.
   useNativeDragHighlight(isActive, setIsDragging);
   useEffect(() => {
     if (!isActive) resetDrag();
@@ -187,7 +186,7 @@ function TuningDropZone({
       if (!file) return;
 
       if (!isTuningFileName(file.name)) {
-        toast("Unsupported file type. Use .ymt or .xml.", true);
+        toast("Unsupported file type. Use .ymt or .ymt.pso.xml.", true);
         return;
       }
 
@@ -207,7 +206,7 @@ function TuningDropZone({
       if (!file) return;
 
       if (!isTuningFileName(file.name)) {
-        toast("Unsupported file type. Use .ymt or .xml.", true);
+        toast("Unsupported file type. Use .ymt or .ymt.pso.xml.", true);
         return;
       }
 
@@ -254,7 +253,7 @@ function TuningDropZone({
               Drag and drop your Tuning file here
             </p>
             <p className="m-0 text-[12px] text-muted-foreground sm:text-[13px]">
-              Supports .ymt and .ymt.xml formats
+              Supports .ymt and .ymt.pso.xml formats
             </p>
           </div>
 
@@ -273,7 +272,7 @@ function TuningDropZone({
               void (async () => {
                 try {
                   const file = await openTextFile("Open doortuning", [
-                    { title: "YMT / XML", extensions: ["ymt", "xml"] },
+                    { title: "YMT / PSO XML", extensions: ["ymt", "xml"] },
                   ]);
                   if (file) onFile(file);
                   return;
@@ -602,7 +601,7 @@ export const TuningView = memo(function TuningView(props: {
 
   return (
     <WorkspaceShell
-      title="Doortuning"
+      title="Door Tuning Editor"
       subtitle={fileName || undefined}
       status={hasUnsaved ? "unsaved" : null}
       actions={

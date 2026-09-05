@@ -1129,7 +1129,7 @@
       <filename>platform:/levels/gta5/generic/objectcovertuning</filename>
       <fileType>OBJ_COVER_TUNING_FILE</fileType>
     </Item>
-    <!-- CHANGE! Swap "doortuning-example to the name of he resource you decide to put your doortuning into -->
+    <!-- CHANGE! Swap "doortuning-example to the name of the resource you decide to put your doortuning into -->
     <Item>
       <filename>resources:/doortuning-example/doortuning</filename>
       <fileType>DOOR_TUNING_FILE</fileType>

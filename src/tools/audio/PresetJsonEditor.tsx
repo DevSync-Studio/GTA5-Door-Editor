@@ -137,8 +137,11 @@ function highlightJson(source: string): string {
     i = j;
   }
 
-  if (!out.endsWith("\n")) out += "\n";
   return out;
+}
+
+function ensureTrailingNewline(value: string): string {
+  return value.endsWith("\n") ? value : `${value}\n`;
 }
 
 function tryParseCatalog(text: string): { ok: true; count: number } | { ok: false; error: string } {
@@ -160,14 +163,18 @@ export function PresetJsonEditor({
   onBack: () => void;
   onApply: (catalog: AudioPreset[]) => void;
 }) {
-  const baseline = useMemo(() => catalogJson(catalog), [catalog]);
-  const defaultsText = useMemo(() => catalogJson(DEFAULT_AUDIO), []);
+  const baseline = useMemo(() => ensureTrailingNewline(catalogJson(catalog)), [catalog]);
+  const defaultsText = useMemo(() => ensureTrailingNewline(catalogJson(DEFAULT_AUDIO)), []);
   const [text, setText] = useState(baseline);
   const [error, setError] = useState<string | null>(null);
   const [confirmBack, setConfirmBack] = useState(false);
   const guttersRef = useRef<HTMLDivElement>(null);
   const highlightRef = useRef<HTMLPreElement>(null);
   const areaRef = useRef<HTMLTextAreaElement>(null);
+
+  const setEditorText = (next: string) => {
+    setText(ensureTrailingNewline(next));
+  };
 
   useEffect(() => {
     setText(baseline);
@@ -200,7 +207,7 @@ export function PresetJsonEditor({
   const formatJson = () => {
     try {
       const parsed = JSON.parse(text) as unknown;
-      setText(`${JSON.stringify(parsed, null, 2)}\n`);
+      setEditorText(`${JSON.stringify(parsed, null, 2)}\n`);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Cannot format - invalid JSON");
@@ -290,7 +297,7 @@ export function PresetJsonEditor({
             className="h-8 gap-1.5 text-muted-foreground"
             disabled={!dirty}
             onClick={() => {
-              setText(baseline);
+              setEditorText(baseline);
               setError(null);
             }}
           >
@@ -304,7 +311,7 @@ export function PresetJsonEditor({
             className="h-8 gap-1.5 text-muted-foreground"
             disabled={text === defaultsText}
             onClick={() => {
-              setText(defaultsText);
+              setEditorText(defaultsText);
               setError(null);
             }}
           >
@@ -337,7 +344,7 @@ export function PresetJsonEditor({
             <pre
               ref={highlightRef}
               aria-hidden
-              className="pointer-events-none absolute inset-0 m-0 overflow-hidden px-4 py-3 font-mono text-[12px] leading-5 whitespace-pre"
+              className="pointer-events-none absolute inset-0 m-0 overflow-auto px-4 py-3 font-mono text-[12px] leading-5 whitespace-pre [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               style={{ color: VS.punct }}
               dangerouslySetInnerHTML={{ __html: highlighted }}
             />
@@ -353,8 +360,8 @@ export function PresetJsonEditor({
                 if (error) setError(null);
               }}
               className={cn(
-                "absolute inset-0 z-10 m-0 h-full w-full resize-none border-0 bg-transparent px-4 py-3",
-                "font-mono text-[12px] leading-5 text-transparent caret-primary outline-none",
+                "absolute inset-0 z-10 m-0 h-full w-full resize-none overflow-auto border-0 bg-transparent px-4 py-3",
+                "font-mono text-[12px] leading-5 text-transparent caret-bright outline-none",
                 "selection:bg-primary/25 selection:text-transparent",
               )}
             />

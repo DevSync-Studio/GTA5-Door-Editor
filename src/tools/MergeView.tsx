@@ -107,7 +107,6 @@ export const MergeView = memo(function MergeView({
     if (!hasAdditions && result.conflicts.length > 0) setTab("conflicts");
   }, [result, hasAdditions]);
 
-  // Toast once when merge becomes invalid - not on every StrictMode effect re-run.
   const mergeFailKeyRef = useRef<string | null>(null);
   useEffect(() => {
     if (!main || incoming.length === 0) {
@@ -223,7 +222,7 @@ export const MergeView = memo(function MergeView({
   const conflicts = useMemo(
     () =>
       result?.conflicts.filter((item) =>
-        `${item.model} ${item.existing} ${item.incoming} ${item.source ?? ""}`
+        `${item.kind} ${item.model} ${item.existing} ${item.incoming} ${item.source ?? ""}`
           .toLowerCase()
           .includes(q),
       ) ?? [],
@@ -253,12 +252,12 @@ export const MergeView = memo(function MergeView({
   };
 
   const previewSummary = !result
-    ? "Missing entries are added. On conflict, the main mapping is kept."
+    ? "Adds missing entries. Main file wins on conflicts."
     : hasAdditions
       ? `${result.addTunings.length} tunings · ${result.addMaps.length} mappings · ${result.conflicts.length} conflicts`
       : result.conflicts.length > 0
-        ? `Nothing new to merge · ${result.conflicts.length} mapping disagreements`
-        : "Nothing new to merge - conflicting files are already covered.";
+        ? `Nothing to add · ${result.conflicts.length} conflicts`
+        : "Nothing to add - already covered.";
 
   useWorkspaceActions("merge", workspaceActive, {
     export: () => {
@@ -269,7 +268,7 @@ export const MergeView = memo(function MergeView({
 
   return (
     <WorkspaceShell
-      title="Merger"
+      title="Doortuning Merger"
       subtitle={main?.name}
       status={result ? (hasAdditions ? "ready" : "uptodate") : null}
       actions={
@@ -324,7 +323,7 @@ export const MergeView = memo(function MergeView({
                   {main.tunings} tunings · {main.mappings} mappings
                 </div>
                 <p className="mt-2 m-0 text-[11px] leading-4 text-faint">
-                  Base file - conflicts keep these mappings.
+                  Base file - conflicts keep these entries.
                 </p>
               </div>
             ) : (
@@ -396,7 +395,7 @@ export const MergeView = memo(function MergeView({
                             ? status.adds > 0
                               ? `${status.adds} new${status.conflicts ? ` · ${status.conflicts} conflicts` : ""}`
                               : status.conflicts > 0
-                                ? `Already covered · ${status.conflicts} disagreements`
+                                ? `Covered · ${status.conflicts} conflicts`
                                 : "Already covered"
                             : `${file.tunings} tunings · ${file.mappings} maps`}
                         </small>
@@ -481,17 +480,18 @@ export const MergeView = memo(function MergeView({
                 <div className="flex min-h-0 flex-1 flex-col">
                   {conflicts.length === 0 ? (
                     <div className="grid h-full place-items-center px-4 text-center text-[12px] text-faint">
-                      No mapping conflicts
+                      No conflicts
                     </div>
                   ) : (
                     <>
                       <p className="m-0 shrink-0 border-b border-line-soft px-3 py-2 text-[11px] leading-4 text-faint">
                         {nothingNew
-                          ? "Nothing new to merge - these are mapping disagreements. Main wins; export won't change them."
-                          : "Main mapping wins when both files define the same model."}
+                          ? "Main already has these names. Export will not change them."
+                          : "Main wins when both files share a tuning name or model mapping."}
                       </p>
-                      <div className="grid shrink-0 grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 border-b border-line-soft px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-faint">
-                        <span>Model</span>
+                      <div className="grid shrink-0 grid-cols-[minmax(0,0.7fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 border-b border-line-soft px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-faint">
+                        <span>Type</span>
+                        <span>Name</span>
                         <span>Main</span>
                         <span className="text-warning">Conflicting</span>
                         <span className="text-right">File</span>
@@ -501,7 +501,10 @@ export const MergeView = memo(function MergeView({
                           items={conflicts}
                           itemHeight={56}
                           render={(item) => (
-                            <div className="grid h-full min-w-0 grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] items-center gap-3 border-b border-line-soft/70 px-3">
+                            <div className="grid h-full min-w-0 grid-cols-[minmax(0,0.7fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] items-center gap-3 border-b border-line-soft/70 px-3">
+                              <span className="min-w-0 truncate text-[11px] uppercase tracking-wide text-faint">
+                                {item.kind === "tuning" ? "Tuning" : "Mapping"}
+                              </span>
                               <span className="min-w-0 truncate text-[13px] text-bright">{item.model}</span>
                               <span className="min-w-0 truncate font-mono text-[12px] text-bright">
                                 {item.existing}

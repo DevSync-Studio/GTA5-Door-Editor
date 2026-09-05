@@ -1,5 +1,5 @@
 export type DoorMotionTuning = {
-  rotationLimitAngle: number; // radians; 0 = default π/2
+  rotationLimitAngle: number;
   rotDir: "both" | "neg" | "pos";
   tuningName: string;
   autoOpenRate: number;
@@ -78,7 +78,7 @@ export function getDoorMotionTuning(modelName: string): DoorMotionTuning | null 
   };
 }
 
-/** Preview open/close loop seconds. rate 0.5 + ω 5 → 3.6s. */
+
 export function previewCyclePeriodSec(tuning: DoorMotionTuning | null): number {
   const rate = tuning?.autoOpenRate ?? 0.5;
   const angVel = tuning?.angularVelocityLimit ?? 5;

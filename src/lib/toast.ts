@@ -18,7 +18,6 @@ function resolveKind(opts: ToastKind = "info"): NotificationKind {
 let lastKey = "";
 let lastAt = 0;
 
-/** Ignore identical toasts fired within this window (StrictMode / double handlers). */
 const DEDUPE_MS = 600;
 
 export function toast(message: string, opts: ToastKind = "info") {

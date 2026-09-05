@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { doorAudioLinkName, joaat, parseNametable, nametableBytes } from "@/domain/audio";
-import { mergeTuningFiles, parseTuning } from "@/domain/tuning";
-import { textOf, validateXml } from "@/lib/xml";
+import {
+  doorAudioLinkName,
+  joaat,
+  parseNametable,
+  nametableBytes,
+} from "@/domain/audio";
+import {
+  mergeTuningFiles,
+  newTuningItem,
+  parseTuning,
+  setDoorMapping,
+  updateTuningValues,
+} from "@/domain/tuning";
+import { setText, textOf, validateXml } from "@/lib/xml";
 
 function tuningItem(name: string): string {
   return `  <Item>
@@ -67,7 +78,9 @@ describe("joaat / doorAudioLinkName", () => {
   it("hashes known stems stably", () => {
     expect(joaat("test")).toMatch(/^[0-9a-f]{8}$/);
     expect(joaat("Test")).toBe(joaat("test"));
-    expect(doorAudioLinkName("d_shop_front")).toBe(`dasl_${joaat("shop_front")}`);
+    expect(doorAudioLinkName("d_shop_front")).toBe(
+      `dasl_${joaat("shop_front")}`,
+    );
     expect(doorAudioLinkName("shop_front")).toBe(`dasl_${joaat("shop_front")}`);
   });
 });
@@ -75,11 +88,20 @@ describe("joaat / doorAudioLinkName", () => {
 describe("xml helpers", () => {
   it("validates doortuning root", () => {
     expect(() => validateXml(SAMPLE_TUNING, "CDoorTuningFile")).not.toThrow();
-    expect(() => validateXml("<foo/>", "CDoorTuningFile")).toThrow(/Not a doortuning/);
+    expect(() => validateXml("<foo/>", "CDoorTuningFile")).toThrow(
+      /Not a doortuning/,
+    );
   });
 
   it("reads tag text", () => {
     expect(textOf("<Name>hello</Name>", "Name")).toBe("hello");
+  });
+
+  it("setText expands self-closing tags", () => {
+    expect(setText("<Flags />", "Flags", "DontCloseWhenTouched")).toBe(
+      "<Flags>DontCloseWhenTouched</Flags>",
+    );
+    expect(setText("<Flags/>", "Flags", "A B")).toBe("<Flags>A B</Flags>");
   });
 });
 
@@ -90,17 +112,66 @@ describe("parseTuning / mergeTuningFiles", () => {
     expect(doc.maps).toEqual([{ model: "prop_door_a", tuning: "base_door" }]);
   });
 
+  it("writes Flags onto new tuning items that start as <Flags />", () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<CDoorTuningFile>
+ <NamedTuningArray>
+${newTuningItem("SlidingTest")}
+ </NamedTuningArray>
+ <ModelToTuneMapping>
+ </ModelToTuneMapping>
+</CDoorTuningFile>
+`;
+    expect(xml).toContain("<Flags />");
+    const next = updateTuningValues(xml, "SlidingTest", {
+      Flags: "DontCloseWhenTouched",
+    });
+    expect(next).toContain("<Flags>DontCloseWhenTouched</Flags>");
+    expect(parseTuning(next).tunings[0]?.fields.Flags).toBe(
+      "DontCloseWhenTouched",
+    );
+  });
+
+  it("adds door mappings without blank gaps", () => {
+    let xml = SAMPLE_TUNING;
+    xml = setDoorMapping(xml, "test_door_latch", "LatchTest");
+    xml = setDoorMapping(xml, "test_door_sliding", "SlidingTest");
+    expect(xml).not.toMatch(/<\/Item>\s*\n\s*\n\s*<Item>/);
+    expect(parseTuning(xml).maps.map((m) => m.model)).toEqual([
+      "prop_door_a",
+      "test_door_latch",
+      "test_door_sliding",
+    ]);
+  });
+
   it("merges missing tunings/maps and reports conflicts", () => {
     const result = mergeTuningFiles(SAMPLE_TUNING, INCOMING_TUNING);
     expect(result.addTunings).toEqual(["new_door"]);
-    expect(result.addMaps).toEqual([{ model: "prop_door_b", tuning: "new_door" }]);
+    expect(result.addMaps).toEqual([
+      { model: "prop_door_b", tuning: "new_door" },
+    ]);
     expect(result.conflicts).toEqual([
-      { model: "prop_door_a", existing: "base_door", incoming: "shop_door" },
+      {
+        kind: "tuning",
+        model: "shop_door",
+        existing: "identical",
+        incoming: "identical",
+      },
+      {
+        kind: "map",
+        model: "prop_door_a",
+        existing: "base_door",
+        incoming: "shop_door",
+      },
     ]);
     const merged = parseTuning(result.xml);
     expect(merged.tunings.some((t) => t.name === "new_door")).toBe(true);
     expect(merged.maps.some((m) => m.model === "prop_door_b")).toBe(true);
-    expect(merged.maps.find((m) => m.model === "prop_door_a")?.tuning).toBe("base_door");
+    expect(merged.maps.find((m) => m.model === "prop_door_a")?.tuning).toBe(
+      "base_door",
+    );
+    expect(result.xml).not.toMatch(/<\/Item>\s*\n\s*\n\s*<Item>/);
+    expect(result.xml).not.toMatch(/<!--\s*(?:added|merged) by gta/i);
   });
 });
 

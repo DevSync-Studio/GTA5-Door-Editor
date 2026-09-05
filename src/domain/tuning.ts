@@ -159,8 +159,17 @@ export function newTuningItem(name: string): string {
   </Item>`;
 }
 
+function indentItem(raw: string): string {
+  const trimmed = raw.trim();
+  return trimmed.startsWith("<Item") ? `  ${trimmed}` : trimmed;
+}
+
+function normalizeItemXml(raw: string): string {
+  return raw.replace(/\s+/g, " ").trim();
+}
+
 export function appendTuning(xml: string, raw: string): string {
-  return insertBeforeClose(xml, "</NamedTuningArray>", `\n${raw}\n `);
+  return insertBeforeClose(xml, "</NamedTuningArray>", indentItem(raw));
 }
 
 export function duplicateTuning(xml: string, oldName: string, newName: string): string {
@@ -202,7 +211,7 @@ export function setDoorMapping(xml: string, model: string, tuning: string): stri
   return insertBeforeClose(
     xml,
     "</ModelToTuneMapping>",
-    `\n  <Item>\n   <ModelName>${model}</ModelName>\n   <TuningName>${tuning}</TuningName>\n  </Item>\n `,
+    `  <Item>\n   <ModelName>${model}</ModelName>\n   <TuningName>${tuning}</TuningName>\n  </Item>`,
   );
 }
 
@@ -227,11 +236,19 @@ export function extractRawItem(xml: string, marker: string): string {
   return span.raw;
 }
 
+export type MergeConflict = {
+  kind: "tuning" | "map";
+  model: string;
+  existing: string;
+  incoming: string;
+  source?: string;
+};
+
 export type MergeResult = {
   xml: string;
   addTunings: string[];
   addMaps: { model: string; tuning: string }[];
-  conflicts: { model: string; existing: string; incoming: string; source?: string }[];
+  conflicts: MergeConflict[];
 };
 
 export function mergeTuningFiles(existingXml: string, incomingXml: string): MergeResult {
@@ -241,31 +258,43 @@ export function mergeTuningFiles(existingXml: string, incomingXml: string): Merg
   const knownM = new Map(existing.maps.map((m) => [m.model, m.tuning]));
   const addTunings = incoming.tunings.filter((t) => !knownT.has(t.name));
   const addMaps = incoming.maps.filter((m) => !knownM.has(m.model));
-  const conflicts = incoming.maps
+
+  const tuningConflicts: MergeConflict[] = incoming.tunings
+    .filter((t) => knownT.has(t.name))
+    .map((t) => {
+      const mainRaw = extractRawItem(existingXml, `<Name>${t.name}</Name>`);
+      const otherRaw = extractRawItem(incomingXml, `<Name>${t.name}</Name>`);
+      const same = normalizeItemXml(mainRaw) === normalizeItemXml(otherRaw);
+      return {
+        kind: "tuning" as const,
+        model: t.name,
+        existing: same ? "identical" : "kept",
+        incoming: same ? "identical" : "differs",
+      };
+    });
+
+  const mapConflicts: MergeConflict[] = incoming.maps
     .filter((m) => knownM.has(m.model) && knownM.get(m.model) !== m.tuning)
     .map((m) => ({
+      kind: "map" as const,
       model: m.model,
       existing: knownM.get(m.model) ?? "",
       incoming: m.tuning,
     }));
 
+  const conflicts = [...tuningConflicts, ...mapConflicts];
+
   let out = existingXml;
   if (addTunings.length) {
-    const chunk =
-      "\n  <!-- Merged by GTA5 Door Editor tool -->" +
-      addTunings
-        .map((t) => `\n  ${extractRawItem(incomingXml, `<Name>${t.name}</Name>`)}`)
-        .join("") +
-      "\n ";
+    const chunk = addTunings
+      .map((t) => indentItem(extractRawItem(incomingXml, `<Name>${t.name}</Name>`)))
+      .join("\n");
     out = insertBeforeClose(out, "</NamedTuningArray>", chunk);
   }
   if (addMaps.length) {
-    const chunk =
-      "\n  <!-- Merged by GTA5 Door Editor tool -->" +
-      addMaps
-        .map((m) => `\n  ${extractRawItem(incomingXml, `<ModelName>${m.model}</ModelName>`)}`)
-        .join("") +
-      "\n ";
+    const chunk = addMaps
+      .map((m) => indentItem(extractRawItem(incomingXml, `<ModelName>${m.model}</ModelName>`)))
+      .join("\n");
     out = insertBeforeClose(out, "</ModelToTuneMapping>", chunk);
   }
   return {

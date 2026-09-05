@@ -150,7 +150,6 @@ export default function App() {
           await saveAudioCatalogText(catalogJson(DEFAULT_AUDIO));
         }
       } catch {
-        // Prefs folder unreadable → keep in-memory defaults.
       }
     })();
     return () => {
@@ -297,7 +296,7 @@ export default function App() {
       <WindowTitlebar />
 
       <div className="flex min-h-0 flex-1">
-        <aside className="flex w-[220px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar/90 backdrop-blur-sm">
+        <aside className="flex w-[248px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar/90 backdrop-blur-sm">
           <div className="px-4 pb-1.5 pt-3.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
             Tools
           </div>

@@ -1,32 +1,32 @@
 export const WORKSPACES = [
   {
     id: "tuning",
-    short: "Tuning",
-    title: "Doortuning",
+    short: "Door Tuning Editor",
+    title: "Door Tuning Editor",
     description: "NamedTuningArray definitions and model mappings",
   },
   {
     id: "type",
-    short: "Type",
-    title: "Door Type",
+    short: "Door Type Editor",
+    title: "Door Type Editor",
     description: "Binary or XML YTYP specialAttribute",
   },
   {
     id: "audio",
-    short: "Audio",
-    title: "Door Audio",
+    short: "Door Audio Editor",
+    title: "Door Audio Editor",
     description: "DAT151 REL door audio",
   },
   {
     id: "names",
-    short: "Names",
-    title: "Nametable",
-    description: "Create and export .nametable files",
+    short: "Nametables Generator",
+    title: "Nametables Generator",
+    description: "Create and export .dat151.nametable files",
   },
   {
     id: "merge",
-    short: "Merge",
-    title: "Merger",
+    short: "Doortuning Merger",
+    title: "Doortuning Merger",
     description: "Union-merge missing YMT entries",
   },
 ] as const;
