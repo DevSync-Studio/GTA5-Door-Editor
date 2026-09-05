@@ -109,21 +109,6 @@ fn read_text_file(path: String) -> Result<OpenedFile, String> {
 }
 
 #[tauri::command]
-fn open_ytyp_file(
-    app: tauri::AppHandle,
-    title: String,
-    filters: Vec<FileFilter>,
-) -> Result<Option<ytyp_bin::OpenedYtyp>, String> {
-    let Some(path) = pick_path(&app, &title, &filters)? else {
-        return Ok(None);
-    };
-    let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
-    let name = file_name(&path);
-    let path_s = path.to_string_lossy().into_owned();
-    ytyp_bin::open_ytyp_bytes(&path_s, &name, &bytes).map(Some)
-}
-
-#[tauri::command]
 fn read_ytyp_file(path: String) -> Result<ytyp_bin::OpenedYtyp, String> {
     let path_buf = PathBuf::from(&path);
     let bytes = std::fs::read(&path_buf).map_err(|e| e.to_string())?;
@@ -159,7 +144,6 @@ fn parse_ydr_mesh_path(path: String) -> Result<ydr_mesh::YdrPreview, String> {
             preview.name = stem.to_string_lossy().into_owned();
         }
     }
-    // Auto-load sibling .ytd files: exact stem, or GTA variants like `name+hidr.ytd`.
     if let Some(dir) = Path::new(&path).parent() {
         let stem = Path::new(&path)
             .file_stem()
@@ -378,7 +362,6 @@ fn backup_existing(
     let app_backup = app_dir.join(format!("{file_name}.{stamp}.bak"));
     std::fs::copy(source, &app_backup).map_err(|e| e.to_string())?;
 
-    // Best-effort sibling backup next to the original file.
     let sibling = format!("{path}.{stamp}.bak");
     let _ = std::fs::copy(source, &sibling);
 
@@ -409,7 +392,6 @@ fn reveal_in_explorer(path: String) -> Result<(), String> {
 
     #[cfg(target_os = "windows")]
     {
-        // Strip Windows UNC prefix \\?\ so Explorer accepts the path.
         let display = absolute.to_string_lossy();
         let cleaned = display
             .strip_prefix(r"\\?\")
@@ -485,7 +467,6 @@ pub fn run() {
     use tauri_plugin_prevent_default::Flags;
     use tauri_plugin_prevent_default::PlatformOptions;
 
-    // Block WebView browser chrome; leave editing shortcuts alone.
     #[cfg(debug_assertions)]
     let flags = Flags::CONTEXT_MENU
         | Flags::RELOAD
@@ -523,7 +504,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             open_text_file,
             read_text_file,
-            open_ytyp_file,
             read_ytyp_file,
             parse_ytyp_bytes,
             parse_ydr_mesh,

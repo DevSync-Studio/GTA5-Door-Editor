@@ -49,20 +49,51 @@ pub struct OpenedYtyp {
     pub archetypes: Vec<BinaryArchetype>,
 }
 
-fn u16_le(data: &[u8], offset: usize) -> u16 {
-    u16::from_le_bytes(data[offset..offset + 2].try_into().unwrap())
+fn u16_le(data: &[u8], offset: usize) -> Result<u16, String> {
+    let end = offset
+        .checked_add(2)
+        .ok_or_else(|| "YTYP offset overflow".to_string())?;
+    let bytes: [u8; 2] = data
+        .get(offset..end)
+        .ok_or_else(|| format!("YTYP truncated at offset {offset}"))?
+        .try_into()
+        .map_err(|_| format!("YTYP truncated at offset {offset}"))?;
+    Ok(u16::from_le_bytes(bytes))
 }
 
-fn u32_le(data: &[u8], offset: usize) -> u32 {
-    u32::from_le_bytes(data[offset..offset + 4].try_into().unwrap())
+fn u32_le(data: &[u8], offset: usize) -> Result<u32, String> {
+    let end = offset
+        .checked_add(4)
+        .ok_or_else(|| "YTYP offset overflow".to_string())?;
+    let bytes: [u8; 4] = data
+        .get(offset..end)
+        .ok_or_else(|| format!("YTYP truncated at offset {offset}"))?
+        .try_into()
+        .map_err(|_| format!("YTYP truncated at offset {offset}"))?;
+    Ok(u32::from_le_bytes(bytes))
 }
 
-fn u64_le(data: &[u8], offset: usize) -> u64 {
-    u64::from_le_bytes(data[offset..offset + 8].try_into().unwrap())
+fn u64_le(data: &[u8], offset: usize) -> Result<u64, String> {
+    let end = offset
+        .checked_add(8)
+        .ok_or_else(|| "YTYP offset overflow".to_string())?;
+    let bytes: [u8; 8] = data
+        .get(offset..end)
+        .ok_or_else(|| format!("YTYP truncated at offset {offset}"))?
+        .try_into()
+        .map_err(|_| format!("YTYP truncated at offset {offset}"))?;
+    Ok(u64::from_le_bytes(bytes))
 }
 
-fn write_u32_le(data: &mut [u8], offset: usize, value: u32) {
-    data[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+fn write_u32_le(data: &mut [u8], offset: usize, value: u32) -> Result<(), String> {
+    let end = offset
+        .checked_add(4)
+        .ok_or_else(|| "YTYP offset overflow".to_string())?;
+    let slot = data
+        .get_mut(offset..end)
+        .ok_or_else(|| format!("YTYP write past end at offset {offset}"))?;
+    slot.copy_from_slice(&value.to_le_bytes());
+    Ok(())
 }
 
 /// CodeWalker `RpfResourceFileEntry.GetSizeFromFlags` - page flags → byte length.
@@ -120,16 +151,16 @@ pub fn prepare_rsc7(data: &[u8]) -> Result<(Vec<u8>, Vec<u8>, u32, u32), String>
     if data.len() < 16 {
         return Err("YTYP file is too small to be RSC7".into());
     }
-    let magic = u32_le(data, 0);
+    let magic = u32_le(data, 0)?;
     if magic != RSC7_MAGIC {
         return Err("Not a binary RSC7 YTYP file".into());
     }
-    let version = u32_le(data, 4);
+    let version = u32_le(data, 4)?;
     if version != 2 {
         return Err(format!("Unsupported RSC7 version {version} (expected 2 for YTYP)"));
     }
-    let system_flags = u32_le(data, 8);
-    let graphics_flags = u32_le(data, 12);
+    let system_flags = u32_le(data, 8)?;
+    let graphics_flags = u32_le(data, 12)?;
     let sys_size = resource_size_from_flags(system_flags);
     let gfx_size = resource_size_from_flags(graphics_flags);
     let decompressed = decompress_body(&data[16..])?;
@@ -409,8 +440,8 @@ fn read_meta_blocks(system: &[u8]) -> Result<Vec<(u32, u32, usize)>, String> {
     if system.len() < 112 {
         return Err("System segment too small for Meta header".into());
     }
-    let data_blocks_pointer = u64_le(system, 0x30);
-    let data_blocks_count = u16_le(system, 0x4C) as usize;
+    let data_blocks_pointer = u64_le(system, 0x30)?;
+    let data_blocks_count = u16_le(system, 0x4C)? as usize;
     if data_blocks_count == 0 || data_blocks_pointer == 0 {
         return Err("YTYP Meta has no data blocks".into());
     }
@@ -421,9 +452,9 @@ fn read_meta_blocks(system: &[u8]) -> Result<Vec<(u32, u32, usize)>, String> {
         if offset + 16 > system.len() {
             break;
         }
-        let name_hash = u32_le(system, offset);
-        let length = u32_le(system, offset + 4);
-        let data_ptr = u64_le(system, offset + 8);
+        let name_hash = u32_le(system, offset)?;
+        let length = u32_le(system, offset + 4)?;
+        let data_ptr = u64_le(system, offset + 8)?;
         let data_off = va_offset(data_ptr);
         blocks.push((name_hash, length, data_off));
     }
@@ -470,11 +501,11 @@ fn parse_archetypes(system: &[u8], path: Option<&str>) -> Result<Vec<BinaryArche
                 break;
             }
             // CodeWalker Meta: flags @12, specialAttribute @16.
-            let flags = u32_le(system, cursor + 12);
-            let special_attribute = u32_le(system, cursor + 16);
-            let name_key = u32_le(system, cursor + 88);
+            let flags = u32_le(system, cursor + 12)?;
+            let special_attribute = u32_le(system, cursor + 16)?;
+            let name_key = u32_le(system, cursor + 88)?;
             // Fall back to assetName when name is unresolved (CodeWalker does similar).
-            let asset_key = u32_le(system, cursor + 112);
+            let asset_key = u32_le(system, cursor + 112)?;
             let mut name = resolve_name(&strings, name_key);
             if name.starts_with("hash_") {
                 let asset_name = resolve_name(&strings, asset_key);
@@ -525,7 +556,7 @@ fn xml_escape(value: &str) -> String {
 }
 
 pub fn is_rsc7(data: &[u8]) -> bool {
-    data.len() >= 4 && u32_le(data, 0) == RSC7_MAGIC
+    matches!(u32_le(data, 0), Ok(magic) if magic == RSC7_MAGIC)
 }
 
 pub fn looks_like_xml(data: &[u8]) -> bool {
@@ -603,11 +634,11 @@ pub fn apply_archetype_updates(
         if sa_offset + 4 > system.len() {
             continue;
         }
-        write_u32_le(&mut system, sa_offset, value.special_attribute);
+        write_u32_le(&mut system, sa_offset, value.special_attribute)?;
         if let Some(flags) = value.flags {
             let flags_offset = arch.flags_offset as usize;
             if flags_offset + 4 <= system.len() {
-                write_u32_le(&mut system, flags_offset, flags);
+                write_u32_le(&mut system, flags_offset, flags)?;
             }
         }
         changed += 1;
@@ -620,7 +651,7 @@ pub fn apply_archetype_updates(
 
 #[cfg(test)]
 mod tests {
-    use super::{jenk_hash, resource_size_from_flags};
+    use super::{jenk_hash, open_ytyp_bytes, resource_size_from_flags, RSC7_MAGIC};
 
     #[test]
     fn size_from_flags_matches_codewalker_examples() {
@@ -637,6 +668,19 @@ mod tests {
     #[test]
     fn jenk_hash_matches_codewalker_gen_hash() {
         assert_eq!(jenk_hash("prop_gate_airport_01"), 0x2B3AD141);
+    }
+
+    #[test]
+    fn truncated_or_garbage_binary_returns_err() {
+        assert!(open_ytyp_bytes("", "bad.ytyp", b"RSC7").is_err());
+        assert!(open_ytyp_bytes("", "bad.ytyp", b"not a ytyp at all!!!").is_err());
+
+        let mut fake = RSC7_MAGIC.to_le_bytes().to_vec();
+        fake.extend_from_slice(&2u32.to_le_bytes());
+        fake.extend_from_slice(&u32::MAX.to_le_bytes());
+        fake.extend_from_slice(&0u32.to_le_bytes());
+        fake.extend_from_slice(&[0x78, 0x9c, 0x03, 0x00, 0x00, 0x00, 0x00, 0x01]);
+        assert!(open_ytyp_bytes("", "bad.ytyp", &fake).is_err());
     }
 }
 

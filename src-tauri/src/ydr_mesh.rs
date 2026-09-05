@@ -316,21 +316,38 @@ fn fallback_uv_layout(stride: u32) -> Option<(usize, bool)> {
     None
 }
 
+fn read_u16_at(b: &[u8], off: usize) -> u16 {
+    match b.get(off..off + 2).and_then(|s| <[u8; 2]>::try_from(s).ok()) {
+        Some(bytes) => u16::from_le_bytes(bytes),
+        None => 0,
+    }
+}
+
+fn read_u32_at(b: &[u8], off: usize) -> u32 {
+    match b.get(off..off + 4).and_then(|s| <[u8; 4]>::try_from(s).ok()) {
+        Some(bytes) => u32::from_le_bytes(bytes),
+        None => 0,
+    }
+}
+
+fn read_f32_at(b: &[u8], off: usize) -> f32 {
+    match b.get(off..off + 4).and_then(|s| <[u8; 4]>::try_from(s).ok()) {
+        Some(bytes) => f32::from_le_bytes(bytes),
+        None => 0.0,
+    }
+}
+
 fn read_uv(vb: &[u8], off: usize, half: bool) -> (f32, f32) {
     if half {
         if off + 4 > vb.len() {
             return (0.0, 0.0);
         }
-        let u = u16::from_le_bytes(vb[off..off + 2].try_into().unwrap());
-        let v = u16::from_le_bytes(vb[off + 2..off + 4].try_into().unwrap());
-        (f16_to_f32(u), f16_to_f32(v))
+        (f16_to_f32(read_u16_at(vb, off)), f16_to_f32(read_u16_at(vb, off + 2)))
     } else {
         if off + 8 > vb.len() {
             return (0.0, 0.0);
         }
-        let u = f32::from_le_bytes(vb[off..off + 4].try_into().unwrap());
-        let v = f32::from_le_bytes(vb[off + 4..off + 8].try_into().unwrap());
-        (u, v)
+        (read_f32_at(vb, off), read_f32_at(vb, off + 4))
     }
 }
 
@@ -534,9 +551,9 @@ fn mesh_from_geometry(
         if po + 12 > vb_data.len() {
             break;
         }
-        let x = f32::from_le_bytes(vb_data[po..po + 4].try_into().unwrap());
-        let y = f32::from_le_bytes(vb_data[po + 4..po + 8].try_into().unwrap());
-        let z = f32::from_le_bytes(vb_data[po + 8..po + 12].try_into().unwrap());
+        let x = read_f32_at(&vb_data, po);
+        let y = read_f32_at(&vb_data, po + 4);
+        let z = read_f32_at(&vb_data, po + 8);
         // GTA Z-up → Three.js Y-up
         positions.push(x);
         positions.push(z);
@@ -559,7 +576,7 @@ fn mesh_from_geometry(
             if off + 2 > ib_data.len() {
                 break;
             }
-            indices.push(u16::from_le_bytes(ib_data[off..off + 2].try_into().unwrap()) as u32);
+            indices.push(u32::from(read_u16_at(&ib_data, off)));
         }
     } else if index_size == 4 {
         for i in 0..(ib_count as usize) {
@@ -567,7 +584,7 @@ fn mesh_from_geometry(
             if off + 4 > ib_data.len() {
                 break;
             }
-            indices.push(u32::from_le_bytes(ib_data[off..off + 4].try_into().unwrap()));
+            indices.push(read_u32_at(&ib_data, off));
         }
     } else {
         return None;

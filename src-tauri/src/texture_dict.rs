@@ -49,24 +49,24 @@ impl<'a> ResReader<'a> {
 }
 
 pub(crate) fn u16_le(b: &[u8], off: usize) -> u16 {
-    if off + 2 > b.len() {
-        return 0;
+    match b.get(off..off + 2).and_then(|s| <[u8; 2]>::try_from(s).ok()) {
+        Some(bytes) => u16::from_le_bytes(bytes),
+        None => 0,
     }
-    u16::from_le_bytes(b[off..off + 2].try_into().unwrap())
 }
 
 pub(crate) fn u32_le(b: &[u8], off: usize) -> u32 {
-    if off + 4 > b.len() {
-        return 0;
+    match b.get(off..off + 4).and_then(|s| <[u8; 4]>::try_from(s).ok()) {
+        Some(bytes) => u32::from_le_bytes(bytes),
+        None => 0,
     }
-    u32::from_le_bytes(b[off..off + 4].try_into().unwrap())
 }
 
 pub(crate) fn u64_le(b: &[u8], off: usize) -> u64 {
-    if off + 8 > b.len() {
-        return 0;
+    match b.get(off..off + 8).and_then(|s| <[u8; 8]>::try_from(s).ok()) {
+        Some(bytes) => u64::from_le_bytes(bytes),
+        None => 0,
     }
-    u64::from_le_bytes(b[off..off + 8].try_into().unwrap())
 }
 
 #[derive(Debug, Clone)]
@@ -212,7 +212,6 @@ fn g9_to_legacy(g9: u8) -> u32 {
     }
 }
 
-/// DXGI-style pitch for one mip level (CodeWalker DDSIO.ComputePitch subset).
 fn compute_pitch(format: u32, width: u32, height: u32) -> (usize, usize) {
     let w = width.max(1) as usize;
     let h = height.max(1) as usize;
@@ -227,7 +226,6 @@ fn compute_pitch(format: u32, width: u32, height: u32) -> (usize, usize) {
         }
         FMT_A8 | FMT_L8 => (w, w * h),
         _ => {
-            // 32-bit RGBA/BGRA and unknown → 4 bpp
             let row = w * 4;
             (row, row * h)
         }

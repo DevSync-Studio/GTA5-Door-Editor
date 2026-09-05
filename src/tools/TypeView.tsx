@@ -8,7 +8,7 @@ import {
   type ChangeEvent,
   type DragEvent,
 } from "react";
-import { FileMinus, Upload } from "lucide-react";
+import { FileMinus, Save, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -318,7 +318,33 @@ export const TypeView = memo(function TypeView(props: {
     setBinaryBase64(baselineBinaryBase64);
   };
 
-  const saveChanges = async () => {
+  const binaryUpdates = () =>
+    items.map((item) => ({
+      name: item.name,
+      specialAttribute: Number.parseInt(item.specialAttribute, 10) || 0,
+      flags: Number.parseInt(item.flags, 10) || 0,
+    }));
+
+  const saveSession = () => {
+    if (!xml) return;
+    setBaselineXml(xml);
+    toast("Session saved - Write to file to update the YTYP on disk.", "save");
+  };
+
+  const markWritten = (nextXml: string, nextBinary: string | null, nextPath?: string, nextName?: string) => {
+    if (nextPath) setPath(nextPath);
+    if (nextName) setFileName(nextName);
+    setXml(nextXml);
+    setBaselineXml(nextXml);
+    setItems(parseYtyp(nextXml));
+    if (nextBinary != null) {
+      setBinaryBase64(nextBinary);
+      setBaselineBinaryBase64(nextBinary);
+    }
+    setLastExportAt(Date.now());
+  };
+
+  const writeToFile = async () => {
     if (!xml) return;
     setSaving(true);
     try {
@@ -327,61 +353,41 @@ export const TypeView = memo(function TypeView(props: {
           toast("YTYP data is missing.", true);
           return;
         }
-        const updates = items.map((item) => ({
-          name: item.name,
-          specialAttribute: Number.parseInt(item.specialAttribute, 10) || 0,
-          flags: item.useFlags ? Number.parseInt(item.flags, 10) || 0 : null,
-        }));
+        const updates = binaryUpdates();
         if (path) {
           const backup = await backupExisting(path, "type");
           await saveYtypBinary(path, binaryBase64, updates);
           const refreshed = await readYtypFile(path);
-          setBinaryBase64(refreshed.binaryBase64);
-          setBaselineBinaryBase64(refreshed.binaryBase64);
-          setXml(refreshed.text);
-          setBaselineXml(refreshed.text);
-          setItems(parseYtyp(refreshed.text));
-          setLastExportAt(Date.now());
-          toast(backup ? "Saved (backup created)" : "Changes saved", "save");
+          markWritten(refreshed.text, refreshed.binaryBase64);
+          toast(backup ? "File updated (backup created)" : "File updated", "export");
         } else {
           const defaultName = fileName?.replace(/\.xml$/i, "") || "door.ytyp";
           const saved = await saveYtypBinaryAs(
-            "Save YTYP binary",
+            "Write YTYP",
             defaultName.endsWith(".ytyp") ? defaultName : `${defaultName}.ytyp`,
             binaryBase64,
             updates,
           );
           if (!saved) return;
-          setPath(saved.path);
-          setFileName(saved.name);
           const refreshed = await readYtypFile(saved.path);
-          setBinaryBase64(refreshed.binaryBase64);
-          setBaselineBinaryBase64(refreshed.binaryBase64);
-          setXml(refreshed.text);
-          setBaselineXml(refreshed.text);
-          setItems(parseYtyp(refreshed.text));
-          setLastExportAt(Date.now());
-          toast("Changes saved", "save");
+          markWritten(refreshed.text, refreshed.binaryBase64, saved.path, saved.name);
+          toast(`Wrote ${saved.name}`, "export");
         }
       } else if (path) {
         const backup = await backupExisting(path, "type");
         await saveTextFile(path, xml);
-        setBaselineXml(xml);
-        setLastExportAt(Date.now());
-        toast(backup ? "Saved (backup created)" : "Changes saved", "save");
+        markWritten(xml, null);
+        toast(backup ? "File updated (backup created)" : "File updated", "export");
       } else {
-        const saved = await saveTextFileAs("Save YTYP XML", fileName || "door.ytyp.xml", xml, [
+        const saved = await saveTextFileAs("Write YTYP XML", fileName || "door.ytyp.xml", xml, [
           { title: "XML", extensions: ["xml"] },
         ]);
         if (!saved) return;
-        setPath(saved.path);
-        setFileName(saved.name);
-        setBaselineXml(xml);
-        setLastExportAt(Date.now());
-        toast("Changes saved", "save");
+        markWritten(xml, null, saved.path, saved.name);
+        toast(`Wrote ${saved.name}`, "export");
       }
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Save failed", true);
+      toast(error instanceof Error ? error.message : "Write failed", true);
     } finally {
       setSaving(false);
     }
@@ -405,7 +411,7 @@ export const TypeView = memo(function TypeView(props: {
 
   useWorkspaceActions("type", workspaceActive, {
     export: () => {
-      if (xml) void saveChanges();
+      if (xml) void writeToFile();
     },
     unload: () => {
       if (xml) closeFile();
@@ -414,22 +420,35 @@ export const TypeView = memo(function TypeView(props: {
 
   return (
     <WorkspaceShell
-      title="Door Type"
+      title="Door Type Editor"
       subtitle={fileName || undefined}
       status={hasUnsaved ? "unsaved" : null}
       actions={
         xml ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            title="Unload this file"
-            onClick={closeFile}
-          >
-            <FileMinus className="size-3.5" strokeWidth={1.75} />
-            Unload
-          </Button>
+          <>
+            <Button
+              type="button"
+              size="sm"
+              className="gap-1.5"
+              disabled={saving}
+              title={path || undefined}
+              onClick={() => void writeToFile()}
+            >
+              <Save className="size-3.5" strokeWidth={1.75} />
+              {saving ? "Writing..." : "Write to file"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              title="Unload this file"
+              onClick={closeFile}
+            >
+              <FileMinus className="size-3.5" strokeWidth={1.75} />
+              Unload
+            </Button>
+          </>
         ) : undefined
       }
     >
@@ -563,8 +582,8 @@ export const TypeView = memo(function TypeView(props: {
 
                       <p className="m-0 text-[12px] leading-5 text-faint">
                         {current.useFlags
-                          ? "Applies the Normal or Automatic flags preset for this door type. Written on save."
-                          : "On save, specialAttribute is updated. Existing flags are left alone."}
+                          ? "Applies the Normal or Automatic flags preset for this door type. Written on Write to file."
+                          : "Write to file updates specialAttribute. Existing flags are left alone."}
                       </p>
                     </div>
                   </section>
@@ -583,8 +602,8 @@ export const TypeView = memo(function TypeView(props: {
             open={hasUnsaved}
             saving={saving}
             onReset={resetChanges}
-            onSave={() => void saveChanges()}
-            description="Save writes this YTYP to disk. Backups go next to the file and under AppData."
+            onSave={saveSession}
+            description="Save keeps edits in this session only. Write to file updates the loaded YTYP on disk."
           />
         </div>
       )}
