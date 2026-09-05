@@ -11,6 +11,8 @@ import {
 import { FileMinus, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SimpleSelect } from "@/components/ui/simple-select";
 import { ConfirmDialog } from "@/components/Dialogs";
@@ -21,8 +23,13 @@ import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { VirtualList } from "@/components/VirtualList";
 import { useNativeDrop, useNativeDragHighlight } from "@/hooks/useNativeDrop";
 import { useWorkspaceActions } from "@/lib/workspaceActions";
-import { DOOR_TYPES } from "@/domain/constants";
-import { parseYtyp, updateSpecialAttribute, type Archetype } from "@/domain/ytyp";
+import { DOOR_TYPES, ytypDoorFlagsPresetLabel } from "@/domain/constants";
+import {
+  applyDoorTypeChange,
+  applyUseFlagsChange,
+  parseYtyp,
+  type Archetype,
+} from "@/domain/ytyp";
 import {
   backupExisting,
   openYtypFile,
@@ -317,12 +324,13 @@ export const TypeView = memo(function TypeView(props: {
     try {
       if (format === "binary") {
         if (!binaryBase64) {
-          toast("Binary YTYP data is missing.", true);
+          toast("YTYP data is missing.", true);
           return;
         }
         const updates = items.map((item) => ({
           name: item.name,
           specialAttribute: Number.parseInt(item.specialAttribute, 10) || 0,
+          flags: item.useFlags ? Number.parseInt(item.flags, 10) || 0 : null,
         }));
         if (path) {
           const backup = await backupExisting(path);
@@ -381,9 +389,18 @@ export const TypeView = memo(function TypeView(props: {
 
   const setDoorType = (value: string) => {
     if (!xml || !current) return;
-    const next = updateSpecialAttribute(xml, current.name, value);
-    setXml(next);
-    setItems(parseYtyp(next));
+    const { xml: nextXml, item } = applyDoorTypeChange(xml, current, value);
+    setXml(nextXml);
+    setItems((prev) => prev.map((entry, index) => (index === selected ? item : entry)));
+  };
+
+  const setUseFlags = (checked: boolean) => {
+    if (!xml || !current || !baselineXml) return;
+    const baselineItem = parseYtyp(baselineXml).find((entry) => entry.name === current.name);
+    const baselineFlags = baselineItem?.flags ?? "0";
+    const { xml: nextXml, item } = applyUseFlagsChange(xml, current, checked, baselineFlags);
+    setXml(nextXml);
+    setItems((prev) => prev.map((entry, index) => (index === selected ? item : entry)));
   };
 
   useWorkspaceActions("type", workspaceActive, {
@@ -481,9 +498,7 @@ export const TypeView = memo(function TypeView(props: {
                       ) : null}
                     </div>
                     <div className="mt-0.5 text-[11px] text-faint">
-                      {format === "binary"
-                        ? "Binary RSC7 · specialAttribute only"
-                        : "XML export · specialAttribute only"}
+                      Door type and optional flags
                     </div>
                   </div>
                 </div>
@@ -493,21 +508,63 @@ export const TypeView = memo(function TypeView(props: {
                     <h3 className="mb-4 text-[13px] font-medium tracking-tight text-muted-foreground">
                       Door type
                     </h3>
-                    <div className="max-w-md">
-                      <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">
-                        specialAttribute
-                      </Label>
-                      <SimpleSelect
-                        value={current.specialAttribute}
-                        onValueChange={setDoorType}
-                        options={Object.entries(DOOR_TYPES).map(([value, label]) => ({
-                          value,
-                          label: `${label} (${value})`,
-                        }))}
-                      />
-                      <p className="mt-3 m-0 text-[12px] leading-5 text-faint">
-                        Only this field is rewritten on save
-                        {format === "binary" ? " inside the binary YTYP." : " in the XML."}
+                    <div className="max-w-md space-y-4">
+                      <div>
+                        <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">
+                          specialAttribute
+                        </Label>
+                        <SimpleSelect
+                          value={current.specialAttribute}
+                          onValueChange={setDoorType}
+                          options={Object.entries(DOOR_TYPES).map(([value, label]) => ({
+                            value,
+                            label: `${label} (${value})`,
+                          }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        <Checkbox
+                          id="type-use-flags"
+                          className="size-5 rounded-[5px] after:-inset-x-2 after:-inset-y-2 [&_[data-slot=checkbox-indicator]>svg]:size-3.5"
+                          checked={current.useFlags}
+                          onCheckedChange={(value) => setUseFlags(value === true)}
+                        />
+                        <Label
+                          htmlFor="type-use-flags"
+                          className="m-0 cursor-pointer text-[13px] font-normal text-bright"
+                        >
+                          Use flags
+                        </Label>
+                      </div>
+
+                      <div>
+                        <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">
+                          Flags value
+                        </Label>
+                        <Input
+                          readOnly
+                          value={
+                            current.useFlags
+                              ? (() => {
+                                  const preset = ytypDoorFlagsPresetLabel(
+                                    Number.parseInt(current.flags, 10) || 0,
+                                  );
+                                  return preset
+                                    ? `${preset} (${current.flags})`
+                                    : current.flags;
+                                })()
+                              : ""
+                          }
+                          placeholder={current.useFlags ? undefined : "Off"}
+                          className="font-mono tabular-nums text-muted-foreground"
+                        />
+                      </div>
+
+                      <p className="m-0 text-[12px] leading-5 text-faint">
+                        {current.useFlags
+                          ? "Applies the Normal or Automatic flags preset for this door type. Written on save."
+                          : "On save, specialAttribute is updated. Existing flags are left alone."}
                       </p>
                     </div>
                   </section>
@@ -527,6 +584,7 @@ export const TypeView = memo(function TypeView(props: {
             saving={saving}
             onReset={resetChanges}
             onSave={() => void saveChanges()}
+            description="Save writes this YTYP to disk. A backup is created when replacing an existing file."
           />
         </div>
       )}

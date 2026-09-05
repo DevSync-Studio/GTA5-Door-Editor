@@ -14,6 +14,7 @@ export type OpenedYtyp = NativeFile & {
 export type YtypAttrUpdate = {
   name: string;
   specialAttribute: number;
+  flags?: number | null;
 };
 
 export type FileFilter = {

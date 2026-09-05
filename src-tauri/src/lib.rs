@@ -27,6 +27,7 @@ pub struct FileFilter {
 pub struct YtypAttrUpdate {
     pub name: String,
     pub special_attribute: u32,
+    pub flags: Option<u32>,
 }
 
 fn file_name(path: &Path) -> String {
@@ -219,11 +220,19 @@ fn write_ytyp_binary(
     let original = base64::engine::general_purpose::STANDARD
         .decode(binary_base64)
         .map_err(|e| e.to_string())?;
-    let mapped: Vec<(String, u32)> = updates
+    let mapped: Vec<(String, ytyp_bin::ArchetypeUpdate)> = updates
         .into_iter()
-        .map(|u| (u.name, u.special_attribute))
+        .map(|u| {
+            (
+                u.name,
+                ytyp_bin::ArchetypeUpdate {
+                    special_attribute: u.special_attribute,
+                    flags: u.flags,
+                },
+            )
+        })
         .collect();
-    let next = ytyp_bin::apply_special_attributes(&original, &mapped, Some(path))?;
+    let next = ytyp_bin::apply_archetype_updates(&original, &mapped, Some(path))?;
     if let Some(parent) = Path::new(path).parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }

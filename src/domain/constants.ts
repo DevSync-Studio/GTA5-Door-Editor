@@ -33,7 +33,7 @@ export const WORKSPACES = [
 
 export type WorkspaceId = (typeof WORKSPACES)[number]["id"];
 
-export const GITHUB_REPO_URL = "https://github.com/OWNER/GTA5_Door_Editor";
+export const GITHUB_REPO_URL = "https://github.com/DevSync-Studio/GTA5-Door-Editor";
 
 export const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.1.0";
 
@@ -65,6 +65,32 @@ export const DOOR_TYPES: Record<string, string> = {
   "12": "Rail Crossing Barrier Door",
 };
 
+export const YTYP_DOOR_FLAGS_NORMAL = 67_239_936;
+export const YTYP_DOOR_FLAGS_AUTOMATIC = 604_110_848;
+
+export function ytypDoorFlagsForType(specialAttribute: string): number {
+  switch (specialAttribute) {
+    case "5":
+    case "8":
+    case "9":
+    case "10":
+    case "12":
+      return YTYP_DOOR_FLAGS_AUTOMATIC;
+    default:
+      return YTYP_DOOR_FLAGS_NORMAL;
+  }
+}
+
+export function isYtypDoorFlagsPreset(flags: number): boolean {
+  return flags === YTYP_DOOR_FLAGS_NORMAL || flags === YTYP_DOOR_FLAGS_AUTOMATIC;
+}
+
+export function ytypDoorFlagsPresetLabel(flags: number): string | null {
+  if (flags === YTYP_DOOR_FLAGS_NORMAL) return "Normal";
+  if (flags === YTYP_DOOR_FLAGS_AUTOMATIC) return "Automatic";
+  return null;
+}
+
 export const SCALAR_FIELDS = [
   "AutoOpenRadiusModifier",
   "AutoOpenRate",
@@ -86,26 +112,39 @@ export const CHECK_FIELDS = [
 
 export const TUNE_HELP: Record<string, string> = {
   AutoOpenVolumeOffset:
-    "Offset from the centre of the door where the auto-open volume is placed.",
-  Flags: "Optional door-behaviour flags. Separate tokens with spaces.",
-  AutoOpenRadiusModifier: "Multiplier for the auto-open volume radius.",
-  AutoOpenRate: "How quickly the door auto-opens after a valid check.",
+    "Offset from the door centre where the auto-open detection volume is placed (local X/Y/Z).",
+  Flags:
+    "Optional behaviour tokens (space-separated), e.g. AutoOpensForAllVehicles, AutoOpensForLawEnforcement, DontCloseWhenTouched, DelayDoorClosingForPlayer.",
+  AutoOpenRadiusModifier:
+    "Scales the radius of the auto-open volume used to detect players/vehicles.",
+  AutoOpenRate:
+    "How fast the door auto-opens once a valid open check succeeds. Higher = faster.",
   AutoOpenCosineAngleBetweenThreshold:
-    "Unknown GTA behaviour; preserve a known value unless testing.",
+    "Engine threshold for auto-open angle checks. Vanilla often uses -1; exact meaning is undocumented.",
   AutoOpenCloseRateTaper:
-    "Unknown GTA behaviour; preserve a known value unless testing.",
-  UseAutoOpenTriggerBox: "Enables the auto-open feature.",
-  CustomTriggerBox: "Uses the custom TriggerBoxMinMax bounds below.",
-  TriggerBoxMinMax: "Minimum and maximum bounds for the custom auto-open trigger box.",
-  BreakableByVehicle: "Whether a vehicle can break the door.",
-  BreakingImpulse: "Physics impulse applied when the door breaks.",
+    "When enabled, vanilla auto doors often taper the close motion. Exact curve is undocumented.",
+  UseAutoOpenTriggerBox:
+    "Use the auto-open trigger box path for this tuning (checks the volume / custom box).",
+  CustomTriggerBox:
+    "Use the custom Trigger box min/max below instead of the default auto-open volume size.",
+  TriggerBoxMinMax:
+    "Local-space min/max corners of the custom auto-open trigger box (only used when Custom trigger box is on).",
+  BreakableByVehicle:
+    "If enabled, a vehicle can break the door (and its auto-open behaviour) with enough impulse.",
+  BreakingImpulse:
+    "Physics impulse magnitude applied when the door breaks. 0 keeps default / none.",
   ShouldLatchShut:
-    "Whether a swinging door immediately latches on return to rest.",
-  MassMultiplier: "Multiplier for the base door mass.",
-  WeaponImpulseMultiplier: "Multiplier for physics impulse received from weapons.",
-  RotationLimitAngle: "Maximum rotation angle from the resting position.",
-  TorqueAngularVelocityLimit: "Maximum angular velocity allowed for the door.",
-  StdDoorRotDir: "Opening direction: both, negative, or positive.",
+    "If enabled, a swinging door latches shut immediately when it returns to the resting position.",
+  MassMultiplier:
+    "Multiplies the door's base mass for physics. Lower feels lighter; higher feels heavier.",
+  WeaponImpulseMultiplier:
+    "Multiplies how strongly weapon hits push the door.",
+  RotationLimitAngle:
+    "Max angle from the resting pose the door may rotate (radians). 0 usually means use the game default (~90°).",
+  TorqueAngularVelocityLimit:
+    "Caps how fast the door can spin (angular velocity). Higher allows snappier motion.",
+  StdDoorRotDir:
+    "Which way a swinging door may open: both directions, negative only, or positive only.",
 };
 
 export const ROT_DIRS = [

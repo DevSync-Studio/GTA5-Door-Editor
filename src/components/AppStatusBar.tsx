@@ -17,12 +17,12 @@ function GitHubIcon({ className }: { className?: string }) {
 
 function formatExportAgo(at: number, now: number): string {
   const sec = Math.max(0, Math.floor((now - at) / 1000));
-  if (sec < 45) return "Exported just now";
+  if (sec < 45) return "Saved just now";
   const min = Math.floor(sec / 60);
-  if (min < 60) return `Exported ${min}m ago`;
+  if (min < 60) return `Saved ${min}m ago`;
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `Exported ${hr}h ago`;
-  return `Exported ${Math.floor(hr / 24)}d ago`;
+  if (hr < 24) return `Saved ${hr}h ago`;
+  return `Saved ${Math.floor(hr / 24)}d ago`;
 }
 
 function Dot() {

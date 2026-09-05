@@ -1,8 +1,14 @@
 import type { ComponentProps, ReactNode } from "react";
+import { CircleHelp } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SimpleSelect } from "@/components/ui/simple-select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { CHECK_FIELDS, ROT_DIRS, SCALAR_FIELDS, TUNE_HELP } from "@/domain/constants";
 import type { TuningFields, Vec3 } from "@/domain/tuning";
 import { FlagTokensInput } from "@/tools/tuning/FlagTokensInput";
@@ -18,7 +24,7 @@ const FIELD_LABELS: Record<string, string> = {
   RotationLimitAngle: "Rotation limit",
   TorqueAngularVelocityLimit: "Angular velocity limit",
   AutoOpenCloseRateTaper: "Close rate taper",
-  UseAutoOpenTriggerBox: "Use auto-open",
+  UseAutoOpenTriggerBox: "Use auto-open trigger box",
   CustomTriggerBox: "Custom trigger box",
   BreakableByVehicle: "Breakable by vehicle",
   ShouldLatchShut: "Latch shut",
@@ -28,6 +34,30 @@ const AUTO_SCALARS = SCALAR_FIELDS.slice(0, 3);
 const PHYSICS_SCALARS = SCALAR_FIELDS.slice(3);
 
 export type TuningBox = { min: Vec3; max: Vec3 };
+
+function FieldInfo({ text }: { text: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex size-4 shrink-0 items-center justify-center rounded-sm text-faint transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40"
+          aria-label="Field help"
+          onClick={(event) => event.preventDefault()}
+        >
+          <CircleHelp className="size-3.5" strokeWidth={1.75} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        sideOffset={6}
+        className="max-w-[17rem] px-2.5 py-2 text-left text-[11px] leading-4 font-normal normal-case tracking-normal"
+      >
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 interface FormCardProps {
   title: string;
@@ -53,17 +83,18 @@ function FormCard({ title, children, className }: FormCardProps) {
 
 interface FieldCellProps {
   label: string;
-  title?: string;
+  help?: string;
   children: ReactNode;
   className?: string;
 }
 
-function FieldCell({ label, title, children, className }: FieldCellProps) {
+function FieldCell({ label, help, children, className }: FieldCellProps) {
   return (
     <div className={cn("min-w-0", className)}>
-      <Label className="mt-0 mb-1 text-[11px] font-normal text-faint" title={title}>
-        {label}
-      </Label>
+      <div className="mb-1 flex items-center gap-1">
+        <Label className="m-0 text-[11px] font-normal text-faint">{label}</Label>
+        {help ? <FieldInfo text={help} /> : null}
+      </div>
       {children}
     </div>
   );
@@ -116,26 +147,36 @@ export function AutoOpenVolumeSection({ fields, onFieldsChange, className }: Sec
 
   return (
     <FormCard title="Auto-open volume" className={className}>
-      <FieldRow>
-        {(["x", "y", "z"] as const).map((axis) => (
-          <FieldCell key={axis} label={`Offset ${axis.toUpperCase()}`} title={TUNE_HELP.AutoOpenVolumeOffset}>
-            <NumInput
-              value={fields.AutoOpenVolumeOffset[axis]}
-              onChange={(event) => setOffset(axis, event.target.value)}
-            />
-          </FieldCell>
-        ))}
-        {AUTO_SCALARS.map((key) => (
-          <FieldCell key={key} label={FIELD_LABELS[key] ?? key} title={TUNE_HELP[key]}>
-            <NumInput
-              value={fields[key]}
-              onChange={(event) =>
-                onFieldsChange({ ...fields, [key]: event.target.value })
-              }
-            />
-          </FieldCell>
-        ))}
-      </FieldRow>
+      <div className="space-y-3">
+        <div>
+          <div className="mb-2 flex items-center gap-1">
+            <span className="text-[11px] font-normal text-faint">Offset</span>
+            <FieldInfo text={TUNE_HELP.AutoOpenVolumeOffset} />
+          </div>
+          <FieldRow className="grid-cols-3">
+            {(["x", "y", "z"] as const).map((axis) => (
+              <FieldCell key={axis} label={axis.toUpperCase()}>
+                <NumInput
+                  value={fields.AutoOpenVolumeOffset[axis]}
+                  onChange={(event) => setOffset(axis, event.target.value)}
+                />
+              </FieldCell>
+            ))}
+          </FieldRow>
+        </div>
+        <FieldRow>
+          {AUTO_SCALARS.map((key) => (
+            <FieldCell key={key} label={FIELD_LABELS[key] ?? key} help={TUNE_HELP[key]}>
+              <NumInput
+                value={fields[key]}
+                onChange={(event) =>
+                  onFieldsChange({ ...fields, [key]: event.target.value })
+                }
+              />
+            </FieldCell>
+          ))}
+        </FieldRow>
+      </div>
     </FormCard>
   );
 }
@@ -145,7 +186,7 @@ export function PhysicsSection({ fields, onFieldsChange, className }: SectionPro
     <FormCard title="Physics" className={className}>
       <FieldRow>
         {PHYSICS_SCALARS.map((key) => (
-          <FieldCell key={key} label={FIELD_LABELS[key] ?? key} title={TUNE_HELP[key]}>
+          <FieldCell key={key} label={FIELD_LABELS[key] ?? key} help={TUNE_HELP[key]}>
             <NumInput
               value={fields[key]}
               onChange={(event) =>
@@ -167,7 +208,6 @@ export function OptionsSection({ fields, onFieldsChange, className }: SectionPro
           <label
             key={key}
             className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-2.5 py-2 text-[13px] text-foreground transition-colors hover:bg-hover"
-            title={TUNE_HELP[key]}
           >
             <Checkbox
               className="size-5 rounded-[5px] after:-inset-x-2 after:-inset-y-2 [&_[data-slot=checkbox-indicator]>svg]:size-3.5"
@@ -179,7 +219,10 @@ export function OptionsSection({ fields, onFieldsChange, className }: SectionPro
                 })
               }
             />
-            <span className="leading-snug">{FIELD_LABELS[key] ?? key}</span>
+            <span className="flex min-w-0 flex-1 items-center gap-1.5 leading-snug">
+              <span className="min-w-0">{FIELD_LABELS[key] ?? key}</span>
+              {TUNE_HELP[key] ? <FieldInfo text={TUNE_HELP[key]} /> : null}
+            </span>
           </label>
         ))}
       </div>
@@ -194,7 +237,7 @@ export function FlagsDirectionSection({ fields, onFieldsChange, className }: Sec
       className={cn("@container col-span-full p-5 sm:p-6 md:min-h-[17.5rem]", className)}
     >
       <div className="flex flex-col gap-4 @min-[40rem]:grid @min-[40rem]:grid-cols-[minmax(0,1fr)_15rem] @min-[40rem]:items-start">
-        <FieldCell className="min-w-0" label="Flags" title={TUNE_HELP.Flags}>
+        <FieldCell className="min-w-0" label="Flags" help={TUNE_HELP.Flags}>
           <FlagTokensInput
             value={fields.Flags}
             onChange={(next) => onFieldsChange({ ...fields, Flags: next })}
@@ -203,7 +246,7 @@ export function FlagsDirectionSection({ fields, onFieldsChange, className }: Sec
         <FieldCell
           className="min-w-0 @min-[40rem]:pt-0"
           label="Rotation direction"
-          title={TUNE_HELP.StdDoorRotDir}
+          help={TUNE_HELP.StdDoorRotDir}
         >
           <SimpleSelect
             value={fields.StdDoorRotDir}
@@ -222,6 +265,10 @@ export function FlagsDirectionSection({ fields, onFieldsChange, className }: Sec
 export function TriggerBoxSection({ box, onBoxChange, className }: TriggerBoxSectionProps) {
   return (
     <FormCard title="Trigger box" className={className}>
+      <div className="mb-3 flex items-center gap-1.5">
+        <p className="m-0 text-[11px] leading-4 text-faint">Custom auto-open bounds</p>
+        <FieldInfo text={TUNE_HELP.TriggerBoxMinMax} />
+      </div>
       <div className="space-y-4">
         {(["min", "max"] as const).map((tag) => (
           <div key={tag}>

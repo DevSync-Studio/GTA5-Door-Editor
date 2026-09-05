@@ -301,7 +301,7 @@ function TuningDropZone({
             <p className="m-0 text-[15px] text-bright sm:text-[16px]">No tuning file yet?</p>
             <p className="m-0 max-w-md text-[12px] leading-5 text-muted-foreground sm:text-[13px]">
               Start from the bundled GTA5 vanilla{" "}
-              <span className="font-mono text-[12px] text-faint">doortuning.ymt</span>, then save
+              <span className="font-mono text-[12px] text-faint">doortuning.ymt</span>, then Export
               your own copy.
             </p>
           </div>
@@ -379,9 +379,11 @@ export const TuningView = memo(function TuningView(props: {
         name: t.name,
         rotationLimitAngle: t.fields.RotationLimitAngle,
         stdDoorRotDir: t.fields.StdDoorRotDir,
+        autoOpenRate: t.fields.AutoOpenRate,
+        angularVelocityLimit: t.fields.TorqueAngularVelocityLimit,
+        closeRateTaper: t.fields.AutoOpenCloseRateTaper,
       })),
     });
-    // Keep lookup alive when leaving Tuning workspace so Type preview can use it.
   }, [doc]);
 
   const applyXml = (next: string) => {
@@ -515,11 +517,6 @@ export const TuningView = memo(function TuningView(props: {
     }
   };
 
-  /**
-   * Export a FiveM resource folder:
-   * parent/[resourceName]/{doortuning.ymt, gta5.meta, fxmanifest.lua}
-   * gta5.meta uses resources:/resourceName/doortuning (no [bracket] folders).
-   */
   const exportResourceBundle = async (rawName: string) => {
     const resourceName = sanitizeResourceName(rawName);
     const nextXml = flushEditor();
@@ -540,7 +537,10 @@ export const TuningView = memo(function TuningView(props: {
       setPath(joinPath(dest, "doortuning.ymt"));
       setFileName("doortuning.ymt");
       setLastExportAt(Date.now());
-      toast(`Exported resource -${resourceName}- ? resources:/${resourceName}/doortuning`, "export");
+      toast(
+        `Exported resource "${resourceName}" → resources:/${resourceName}/doortuning`,
+        "export",
+      );
     } catch (error) {
       toast(error instanceof Error ? error.message : "Resource export failed", true);
     } finally {
@@ -627,7 +627,7 @@ export const TuningView = memo(function TuningView(props: {
                   onClick={() => setPrompt({ kind: "exportResource" })}
                 >
                   <Package className="size-3.5" strokeWidth={1.75} />
-                  FiveM resource bundle-
+                  FiveM resource bundle
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

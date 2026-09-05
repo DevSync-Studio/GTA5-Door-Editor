@@ -31,8 +31,11 @@ pub struct BinaryArchetype {
     pub name: String,
     pub name_hash: u32,
     pub special_attribute: u32,
+    pub flags: u32,
     /// Absolute byte offset of specialAttribute inside decompressed system segment.
     pub sa_offset: u32,
+    /// Absolute byte offset of flags (CodeWalker CBaseArchetypeDef +12).
+    pub flags_offset: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -466,6 +469,8 @@ fn parse_archetypes(system: &[u8], path: Option<&str>) -> Result<Vec<BinaryArche
             if cursor + 112 > system.len() {
                 break;
             }
+            // CodeWalker Meta: flags @12, specialAttribute @16.
+            let flags = u32_le(system, cursor + 12);
             let special_attribute = u32_le(system, cursor + 16);
             let name_key = u32_le(system, cursor + 88);
             // Fall back to assetName when name is unresolved (CodeWalker does similar).
@@ -481,7 +486,9 @@ fn parse_archetypes(system: &[u8], path: Option<&str>) -> Result<Vec<BinaryArche
                 name,
                 name_hash: name_key,
                 special_attribute,
+                flags,
                 sa_offset: (cursor + 16) as u32,
+                flags_offset: (cursor + 12) as u32,
             });
             cursor += stride;
         }
@@ -499,8 +506,9 @@ fn archetypes_to_xml(archetypes: &[BinaryArchetype]) -> String {
     );
     for item in archetypes {
         body.push_str(&format!(
-            "  <Item type=\"CBaseArchetypeDef\">\n   <name>{}</name>\n   <specialAttribute value=\"{}\" />\n  </Item>\n",
+            "  <Item type=\"CBaseArchetypeDef\">\n   <name>{}</name>\n   <flags value=\"{}\" />\n   <specialAttribute value=\"{}\" />\n  </Item>\n",
             xml_escape(&item.name),
+            item.flags,
             item.special_attribute
         ));
     }
@@ -561,19 +569,24 @@ pub fn open_ytyp_bytes(path: &str, name: &str, data: &[u8]) -> Result<OpenedYtyp
     })
 }
 
-pub fn apply_special_attributes(
+pub struct ArchetypeUpdate {
+    pub special_attribute: u32,
+    pub flags: Option<u32>,
+}
+
+pub fn apply_archetype_updates(
     original: &[u8],
-    updates: &[(String, u32)],
+    updates: &[(String, ArchetypeUpdate)],
     path: Option<&str>,
 ) -> Result<Vec<u8>, String> {
     let (mut system, graphics, system_flags, graphics_flags) = prepare_rsc7(original)?;
     let archetypes = parse_archetypes(&system, path)?;
-    let mut by_hash: HashMap<u32, u32> = HashMap::new();
-    let mut by_name: HashMap<String, u32> = HashMap::new();
+    let mut by_hash: HashMap<u32, &ArchetypeUpdate> = HashMap::new();
+    let mut by_name: HashMap<String, &ArchetypeUpdate> = HashMap::new();
     for (name, value) in updates {
-        by_name.insert(name.to_ascii_lowercase(), *value);
+        by_name.insert(name.to_ascii_lowercase(), value);
         if let Some(hash) = resolve_name_key(name) {
-            by_hash.insert(hash, *value);
+            by_hash.insert(hash, value);
         }
     }
 
@@ -581,15 +594,22 @@ pub fn apply_special_attributes(
     for arch in &archetypes {
         let value = by_hash
             .get(&arch.name_hash)
-            .or_else(|| by_name.get(&arch.name.to_ascii_lowercase()));
+            .copied()
+            .or_else(|| by_name.get(&arch.name.to_ascii_lowercase()).copied());
         let Some(value) = value else {
             continue;
         };
-        let offset = arch.sa_offset as usize;
-        if offset + 4 > system.len() {
+        let sa_offset = arch.sa_offset as usize;
+        if sa_offset + 4 > system.len() {
             continue;
         }
-        write_u32_le(&mut system, offset, *value);
+        write_u32_le(&mut system, sa_offset, value.special_attribute);
+        if let Some(flags) = value.flags {
+            let flags_offset = arch.flags_offset as usize;
+            if flags_offset + 4 <= system.len() {
+                write_u32_le(&mut system, flags_offset, flags);
+            }
+        }
         changed += 1;
     }
     if changed == 0 {

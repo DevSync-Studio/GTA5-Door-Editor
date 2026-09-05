@@ -11,6 +11,7 @@ import {
   getPreviewTuningVersion,
   namesMatchHashOrString,
   parseHashLabel,
+  previewCyclePeriodSec,
   subscribePreviewTuning,
   type DoorMotionTuning,
 } from "@/domain/previewTuning";
@@ -25,12 +26,12 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * GTA door physics pivots on the drawable origin (set in DCC), not the mesh AABB.
- *   7  Normal  - origin at hinge; rotate around up (GTA Z → Three Y)
- *   5  Garage  - origin at bottom center; rotate 90° up around local X
- *   8  Sliding - origin at bottom corner; translate along local X
- *  10  Vert.   - origin at bottom; translate along local up
- *   9/12 Barrier - origin at post; raise arm ~90° around local Z
+ * Door motion pivots on drawable origin (DCC), not mesh AABB.
+ *   7  Normal   - hinge; yaw (GTA Z → Three Y)
+ *   5  Garage   - tip + rise
+ *   8  Sliding  - toward origin on local X
+ *  10 Vert.     - translate up
+ *   9/12 Barrier - arm rotate on local Z
  */
 
 function isYdrPath(path: string): boolean {
@@ -50,11 +51,7 @@ function matchesYdrName(expected: string, fileLabel: string, previewName?: strin
   return namesMatchHashOrString(expected, fileStem(fileLabel), previewName);
 }
 
-/**
- * YTD dictionaries often use suffixes: `model+hidr.ytd`, `model_hi.ytd`, etc.
- * Accept exact stem or stem + `+` / `_` suffix. Hash archetypes: any .ytd once mesh is up,
- * or YTD stem whose jenk matches the hash label.
- */
+/** Accept `model.ytd`, `model+hidr.ytd`, `model_*.ytd`; hash names via jenk. */
 function matchesYtdName(expected: string, fileLabel: string, allowAnyIfHash = false): boolean {
   const want = expected.trim();
   if (!want) return false;
@@ -159,25 +156,60 @@ function extentAlong(min: number, max: number, preferPositive: boolean): number 
   return neg > 1e-4 ? neg : pos;
 }
 
+function slideTowardOriginTravel(min: number, max: number): number {
+  const mid = (min + max) * 0.5;
+  if (mid >= 0) {
+    const pos = Math.max(0, max);
+    return pos > 1e-4 ? -pos : Math.max(0, -min);
+  }
+  const neg = Math.max(0, -min);
+  return neg > 1e-4 ? neg : -Math.max(0, max);
+}
+
 function doorMotionFor(specialAttribute: string): DoorMotion {
   switch (specialAttribute) {
     case "5":
       return {
-        short: "Garage · up (origin hinge)",
-        apply: (pivot, amount, _ext, tuning) => {
-          pivot.position.set(0, 0, 0);
-          pivot.rotation.set(-dirSign(tuning, amount) * openAngleRad(tuning), 0, 0);
+        short: "Garage · tilt + rise",
+        apply: (pivot, amount, ext, tuning) => {
+          const H = Math.max(ext.size.y, 1e-4);
+          const maxTip = openAngleRad(tuning);
+          const t = amount * maxTip;
+          const lift = H * 0.58 * (1 - Math.cos(Math.min(t, Math.PI / 2)));
+          const flip = (tuning?.rotDir ?? "pos") === "neg" ? -1 : 1;
+          const hx = (ext.min.x + ext.max.x) * 0.5;
+          const hy = ext.min.y;
+          const hz = (ext.min.z + ext.max.z) * 0.5;
+          const alongX = ext.size.x >= ext.size.z;
+          const theta = flip * (alongX ? -t : t);
+          const c = Math.cos(theta);
+          const s = Math.sin(theta);
+          const cy = hy + lift;
+          if (alongX) {
+            pivot.rotation.set(theta, 0, 0);
+            pivot.position.set(
+              0,
+              cy - (hy * c - hz * s),
+              hz - (hy * s + hz * c),
+            );
+          } else {
+            pivot.rotation.set(0, 0, theta);
+            pivot.position.set(
+              hx - (hx * c - hy * s),
+              cy - (hx * s + hy * c),
+              0,
+            );
+          }
         },
       };
     case "8":
       return {
-        short: "Sliding · +X (origin corner)",
+        short: "Sliding · toward origin",
         apply: (pivot, amount, ext, tuning) => {
-          const travel = extentAlong(ext.min.x, ext.max.x, (tuning?.rotDir ?? "pos") !== "neg");
-          const signed =
-            (tuning?.rotDir ?? "pos") === "neg" ? -amount * travel : amount * travel;
+          const travel = slideTowardOriginTravel(ext.min.x, ext.max.x);
+          const sign = (tuning?.rotDir ?? "pos") === "neg" ? -1 : 1;
           pivot.rotation.set(0, 0, 0);
-          pivot.position.set(signed, 0, 0);
+          pivot.position.set(sign * amount * travel, 0, 0);
         },
       };
     case "10":
@@ -192,16 +224,23 @@ function doorMotionFor(specialAttribute: string): DoorMotion {
     case "9":
     case "12":
       return {
-        short: specialAttribute === "12" ? "Rail · raise" : "Barrier · raise",
+        short: specialAttribute === "12" ? "Rail · arm rotate" : "Barrier · arm rotate",
         apply: (pivot, amount, _ext, tuning) => {
           pivot.position.set(0, 0, 0);
           pivot.rotation.set(0, 0, -dirSign(tuning, amount) * openAngleRad(tuning));
         },
       };
     case "7":
-    default:
       return {
         short: "Normal · yaw (origin hinge)",
+        apply: (pivot, amount, _ext, tuning) => {
+          pivot.position.set(0, 0, 0);
+          pivot.rotation.set(0, dirSign(tuning, amount) * openAngleRad(tuning), 0);
+        },
+      };
+    default:
+      return {
+        short: "Unknown · yaw (fallback)",
         apply: (pivot, amount, _ext, tuning) => {
           pivot.position.set(0, 0, 0);
           pivot.rotation.set(0, dirSign(tuning, amount) * openAngleRad(tuning), 0);
@@ -210,12 +249,15 @@ function doorMotionFor(specialAttribute: string): DoorMotion {
   }
 }
 
-function cycleAmount(elapsed: number, periodSec: number): number {
+function cycleAmount(elapsed: number, periodSec: number, taperClose: boolean): number {
   const u = (elapsed % periodSec) / periodSec;
   if (u < 0.08) return 0;
   if (u < 0.5) return doorEase((u - 0.08) / 0.42);
   if (u < 0.58) return 1;
-  return doorEase(1 - (u - 0.58) / 0.42);
+  const closeT = (u - 0.58) / 0.42;
+  const eased = doorEase(1 - closeT);
+  if (taperClose) return eased * eased;
+  return eased;
 }
 
 function YdrCanvas({
@@ -301,7 +343,6 @@ function YdrCanvas({
         textureCache.set(key, tex);
         return tex;
       } catch {
-        /* Corrupt / truncated texture payload - skip map, keep untextured mesh. */
         return null;
       }
     };
@@ -385,7 +426,12 @@ function YdrCanvas({
 
       if (playingRef.current) {
         animTime += dt;
-        frozenAmount = cycleAmount(animTime, 3.6);
+        const tuning = tuningRef.current;
+        frozenAmount = cycleAmount(
+          animTime,
+          previewCyclePeriodSec(tuning),
+          tuning?.closeRateTaper ?? false,
+        );
       }
 
       pivot.position.set(0, 0, 0);
@@ -480,7 +526,7 @@ export function YdrPreviewPanel({
   const expectedYtdHint = `${modelName}.ytd / ${modelName}+hidr.ytd`;
   const canMatchByFilename = parseHashLabel(modelName) == null;
   const motionTuning = getDoorMotionTuning(modelName);
-  void tuningEpoch; // re-render when Tuning workspace updates the lookup
+  void tuningEpoch;
 
   const rejectWrongModel = useCallback((got: string, kind: "ydr" | "ytd") => {
     toast(
@@ -785,7 +831,7 @@ export function YdrPreviewPanel({
             {dragging ? (
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-primary/15 backdrop-blur-[1px]">
                 <p className="m-0 rounded-lg border border-primary/40 bg-panel/90 px-4 py-2 text-[13px] font-medium text-primary">
-                  Drop {expectedYdr} + {modelName}+hidr.ytd
+                  Drop {expectedYdr} + {expectedYtdHint}
                 </p>
               </div>
             ) : null}
@@ -804,6 +850,9 @@ export function YdrPreviewPanel({
                     {motionTuning.rotationLimitAngle > 0
                       ? ` · ${(motionTuning.rotationLimitAngle * (180 / Math.PI)).toFixed(0)}°`
                       : " · 90° def"}
+                    {` · rate ${motionTuning.autoOpenRate}`}
+                    {` · ω ${motionTuning.angularVelocityLimit}`}
+                    {motionTuning.closeRateTaper ? " · taper" : ""}
                   </Chip>
                 ) : (
                   <Chip>No doortuning linked</Chip>
@@ -822,7 +871,7 @@ export function YdrPreviewPanel({
                 <span className="text-[#74c0fc]">Z</span>
               </div>
               <div className="rounded-md border border-white/8 bg-black/45 px-2 py-1 text-[10px] text-white/45 backdrop-blur-sm">
-                Select both · {expectedYdr} · {modelName}+hidr.ytd
+                Select both · {expectedYdr} · {expectedYtdHint}
               </div>
             </div>
           </>
@@ -850,12 +899,12 @@ export function YdrPreviewPanel({
             <div className="space-y-1.5">
               <p className="m-0 text-[13px] font-medium text-bright">
                 {dragging
-                  ? `Drop ${expectedYdr} and/or ${modelName}+hidr.ytd`
+                  ? `Drop ${expectedYdr} and/or ${expectedYtdHint}`
                   : `Import ${expectedYdr}`}
               </p>
               <p className="m-0 max-w-[340px] text-[11px] leading-relaxed text-faint">
-                Multi-select the .ydr and .ytd together, or drop both. Names like{" "}
-                {modelName}+hidr.ytd are accepted. Sibling YTDs auto-load from disk.
+                Multi-select the .ydr and .ytd together, or drop both. Accepts{" "}
+                {expectedYtdHint}. Sibling YTDs auto-load from disk.
               </p>
             </div>
           </button>

@@ -1,7 +1,10 @@
 export type DoorMotionTuning = {
-  rotationLimitAngle: number; // radians; 0 = use default π/2
+  rotationLimitAngle: number; // radians; 0 = default π/2
   rotDir: "both" | "neg" | "pos";
   tuningName: string;
+  autoOpenRate: number;
+  angularVelocityLimit: number;
+  closeRateTaper: boolean;
 };
 
 type TuningSource = {
@@ -10,6 +13,9 @@ type TuningSource = {
     name: string;
     rotationLimitAngle: string;
     stdDoorRotDir: string;
+    autoOpenRate: string;
+    angularVelocityLimit: string;
+    closeRateTaper: string;
   }[];
 };
 
@@ -45,6 +51,16 @@ function parseRotDir(raw: string): DoorMotionTuning["rotDir"] {
   return "both";
 }
 
+function parseFinite(raw: string, fallback: number): number {
+  const n = Number.parseFloat(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function parseBool(raw: string): boolean {
+  const s = raw.trim().toLowerCase();
+  return s === "true" || s === "1" || s === "yes";
+}
+
 export function getDoorMotionTuning(modelName: string): DoorMotionTuning | null {
   if (!source || !modelName) return null;
   const want = modelName.toLowerCase();
@@ -52,12 +68,22 @@ export function getDoorMotionTuning(modelName: string): DoorMotionTuning | null 
   if (!map) return null;
   const tune = source.tunings.find((t) => t.name.toLowerCase() === map.tuning.toLowerCase());
   if (!tune) return null;
-  const angle = Number.parseFloat(tune.rotationLimitAngle);
   return {
-    rotationLimitAngle: Number.isFinite(angle) ? angle : 0,
+    rotationLimitAngle: parseFinite(tune.rotationLimitAngle, 0),
     rotDir: parseRotDir(tune.stdDoorRotDir || ""),
     tuningName: tune.name,
+    autoOpenRate: Math.max(parseFinite(tune.autoOpenRate, 0.5), 0.05),
+    angularVelocityLimit: Math.max(parseFinite(tune.angularVelocityLimit, 5), 0.05),
+    closeRateTaper: parseBool(tune.closeRateTaper),
   };
+}
+
+/** Preview open/close loop seconds. rate 0.5 + ω 5 → 3.6s. */
+export function previewCyclePeriodSec(tuning: DoorMotionTuning | null): number {
+  const rate = tuning?.autoOpenRate ?? 0.5;
+  const angVel = tuning?.angularVelocityLimit ?? 5;
+  const period = 3.6 * (0.5 / Math.max(rate, 0.05)) * (5 / Math.max(angVel, 0.05));
+  return Math.min(Math.max(period, 1.0), 18);
 }
 
 /** CodeWalker JenkHash.GenHash - does not force lowercase. */
