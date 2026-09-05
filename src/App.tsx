@@ -25,10 +25,12 @@ import {
   type WorkspaceFooterState,
   type WorkspaceId,
 } from "@/domain/constants";
-import { DEFAULT_AUDIO, type AudioAssignment, type AudioDoor, type AudioPreset } from "@/domain/audio";
+import { DEFAULT_AUDIO, catalogJson, parseAudioCatalogFile, type AudioAssignment, type AudioDoor, type AudioPreset } from "@/domain/audio";
 import { AppStatusBar } from "@/components/AppStatusBar";
 import { ConfirmDialog } from "@/components/Dialogs";
 import { WindowTitlebar } from "@/components/WindowTitlebar";
+import { loadAudioCatalogText, saveAudioCatalogText } from "@/lib/files";
+import { toast } from "@/lib/toast";
 import { isEditableTarget, runWorkspaceAction } from "@/lib/workspaceActions";
 import { cn } from "@/lib/utils";
 
@@ -125,6 +127,45 @@ export default function App() {
   const [assignments, setAssignments] = useState<AudioAssignment[]>([]);
   const [catalog, setCatalog] = useState<AudioPreset[]>(DEFAULT_AUDIO);
   const [nametable, setNametable] = useState<string[]>([]);
+  const catalogTouchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isTauri()) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const text = await loadAudioCatalogText();
+        if (cancelled || catalogTouchedRef.current) return;
+
+        if (text == null) {
+          await saveAudioCatalogText(catalogJson(DEFAULT_AUDIO));
+          return;
+        }
+
+        try {
+          setCatalog(parseAudioCatalogFile(text));
+        } catch {
+          toast("Saved audio presets were invalid - restoring defaults.", true);
+          setCatalog(DEFAULT_AUDIO);
+          await saveAudioCatalogText(catalogJson(DEFAULT_AUDIO));
+        }
+      } catch {
+        // Prefs folder unreadable → keep in-memory defaults.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const persistCatalog = useCallback((next: AudioPreset[]) => {
+    catalogTouchedRef.current = true;
+    setCatalog(next);
+    if (!isTauri()) return;
+    void saveAudioCatalogText(catalogJson(next)).catch((error) => {
+      toast(error instanceof Error ? error.message : "Could not save audio presets.", true);
+    });
+  }, []);
 
   useEffect(() => {
     setVisited((prev) => {
@@ -182,12 +223,13 @@ export default function App() {
     allowCloseRef.current = true;
     setCloseConfirm(false);
     if (isTauri()) {
-      void getCurrentWindow().close();
+      void getCurrentWindow().destroy();
     }
   }, []);
 
   useEffect(() => {
     if (!isTauri()) return;
+    let active = true;
     let unlisten: (() => void) | undefined;
     void getCurrentWindow()
       .onCloseRequested((event) => {
@@ -196,9 +238,16 @@ export default function App() {
         setCloseConfirm(true);
       })
       .then((fn) => {
+        if (!active) {
+          fn();
+          return;
+        }
         unlisten = fn;
       });
-    return () => unlisten?.();
+    return () => {
+      active = false;
+      unlisten?.();
+    };
   }, []);
 
   useEffect(() => {
@@ -327,7 +376,7 @@ export default function App() {
                 catalog={catalog}
                 onDoors={setDoors}
                 onAssignments={setAssignments}
-                onCatalog={setCatalog}
+                onCatalog={persistCatalog}
               />
             </Suspense>
           </KeepAlivePane>

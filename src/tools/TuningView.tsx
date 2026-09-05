@@ -459,14 +459,21 @@ export const TuningView = memo(function TuningView(props: {
 
   const flushEditor = (): string | null => {
     if (!xml) return null;
-    const flushed = editorRef.current?.flush();
-    if (flushed) {
+    if (editorRef.current?.isDirty()) {
+      const flushed = editorRef.current.flush();
+      if (!flushed) return null;
       setXml(flushed);
       setDoc(parseTuning(flushed));
       setFormDirty(false);
       return flushed;
     }
     return xml;
+  };
+
+  const blockIfFormDirty = (): boolean => {
+    if (!formDirty && !editorRef.current?.isDirty()) return false;
+    toast("Save or discard edits before switching.", true);
+    return true;
   };
 
   const saveSession = () => {
@@ -481,7 +488,7 @@ export const TuningView = memo(function TuningView(props: {
     if (!nextXml) return;
     setSaving(true);
     try {
-      const backup = await backupExisting(targetPath);
+      const backup = await backupExisting(targetPath, "tuning");
       await saveTextFile(targetPath, nextXml);
       setBaselineXml(nextXml);
       setLastExportAt(Date.now());
@@ -705,6 +712,7 @@ export const TuningView = memo(function TuningView(props: {
                           type="button"
                           className="ide-row-main"
                           onClick={() => {
+                            if (blockIfFormDirty()) return;
                             setActive("tuning");
                             setSelected(index);
                           }}
@@ -744,9 +752,11 @@ export const TuningView = memo(function TuningView(props: {
                                   ? `Remove ${item.name} and its ${links.length} linked door mapping(s)?`
                                   : `Remove tuning ${item.name}?`,
                                 run: () => {
+                                  const base = flushEditor();
+                                  if (!base) return;
                                   applyXml(
                                     removeTuning(
-                                      xml,
+                                      base,
                                       item.name,
                                       links.map((link) => link.model),
                                     ),
@@ -811,6 +821,7 @@ export const TuningView = memo(function TuningView(props: {
                           active === "door" && index === selectedDoor && "active",
                         )}
                         onClick={() => {
+                          if (blockIfFormDirty()) return;
                           setActive("door");
                           setSelectedDoor(index);
                         }}
@@ -838,6 +849,7 @@ export const TuningView = memo(function TuningView(props: {
                   xml={xml}
                   onDirtyChange={setFormDirty}
                   onOpenTuning={(name) => {
+                    if (blockIfFormDirty()) return;
                     const index = doc.tunings.findIndex((item) => item.name === name);
                     if (index < 0) {
                       toast("That tuning is not in this file.", true);
@@ -851,7 +863,9 @@ export const TuningView = memo(function TuningView(props: {
                       title: "Remove door",
                       body: `Remove the door mapping for ${selectedMap.model}?`,
                       run: () => {
-                        applyXml(removeDoorMapping(xml, selectedMap.model));
+                        const base = flushEditor();
+                        if (!base) return;
+                        applyXml(removeDoorMapping(base, selectedMap.model));
                         setSelectedDoor(0);
                         toast("Door mapping removed");
                       },
@@ -875,7 +889,15 @@ export const TuningView = memo(function TuningView(props: {
                         ? `Remove ${selectedTune.name} and its ${links.length} linked door mapping(s)?`
                         : `Remove tuning ${selectedTune.name}?`,
                       run: () => {
-                        applyXml(removeTuning(xml, selectedTune.name, links.map((link) => link.model)));
+                        const base = flushEditor();
+                        if (!base) return;
+                        applyXml(
+                          removeTuning(
+                            base,
+                            selectedTune.name,
+                            links.map((link) => link.model),
+                          ),
+                        );
                         setSelected(0);
                         toast("Tuning removed");
                       },
@@ -935,30 +957,32 @@ export const TuningView = memo(function TuningView(props: {
             return;
           }
           if (!xml || !doc) return;
+          const base = flushEditor();
+          if (!base) return;
           const name = value.trim();
           try {
             if (prompt?.kind === "addTune") {
               if (!uniqueTune(name)) return toast("A unique tuning name is required.", true);
-              const next = appendTuning(xml, newTuningItem(name));
+              const next = appendTuning(base, newTuningItem(name));
               applyXml(next);
               setSelected(parseTuning(next).tunings.findIndex((item) => item.name === name));
               setActive("tuning");
             } else if (prompt?.kind === "dupTune") {
               if (!uniqueTune(name)) return toast("That tuning name already exists.", true);
-              const next = duplicateTuning(xml, prompt.name, name);
+              const next = duplicateTuning(base, prompt.name, name);
               applyXml(next);
               setSelected(parseTuning(next).tunings.findIndex((item) => item.name === name));
               setActive("tuning");
             } else if (prompt?.kind === "renameTune") {
               if (name === prompt.name) return setPrompt(null);
               if (!uniqueTune(name)) return toast("That tuning name already exists.", true);
-              applyXml(renameTuning(xml, prompt.name, name));
+              applyXml(renameTuning(base, prompt.name, name));
               toast("Tuning renamed");
             } else if (prompt?.kind === "addDoor") {
               if (!name) return toast("Model name is required.", true);
               const tuning = doc.tunings[0]?.name;
               if (!tuning) return toast("Add a tuning first.", true);
-              applyXml(setDoorMapping(xml, name, tuning));
+              applyXml(setDoorMapping(base, name, tuning));
               setActive("door");
             }
             setPrompt(null);

@@ -160,15 +160,21 @@ export async function saveTextFileAs(
   });
 }
 
-export async function backupExisting(path: string): Promise<string | null> {
-  return invoke<string | null>("backup_existing", { path });
+export type BackupTool = "tuning" | "type" | "audio" | "names" | "merge";
+
+export async function backupExisting(
+  path: string,
+  tool: BackupTool,
+): Promise<string | null> {
+  return invoke<string | null>("backup_existing", { path, tool });
 }
 
 export async function saveWithBackup(
   path: string,
   contents: string,
+  tool: BackupTool,
 ): Promise<string | null> {
-  const backup = await backupExisting(path);
+  const backup = await backupExisting(path, tool);
   await saveTextFile(path, contents);
   return backup;
 }
@@ -193,4 +199,12 @@ export async function revealInExplorer(path: string): Promise<void> {
 
 export async function openExternalUrl(url: string): Promise<void> {
   await invoke("open_external_url", { url });
+}
+
+export async function loadAudioCatalogText(): Promise<string | null> {
+  return invoke<string | null>("load_audio_catalog");
+}
+
+export async function saveAudioCatalogText(contents: string): Promise<void> {
+  await invoke("save_audio_catalog", { contents });
 }

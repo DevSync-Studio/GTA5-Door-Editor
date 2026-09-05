@@ -333,7 +333,7 @@ export const TypeView = memo(function TypeView(props: {
           flags: item.useFlags ? Number.parseInt(item.flags, 10) || 0 : null,
         }));
         if (path) {
-          const backup = await backupExisting(path);
+          const backup = await backupExisting(path, "type");
           await saveYtypBinary(path, binaryBase64, updates);
           const refreshed = await readYtypFile(path);
           setBinaryBase64(refreshed.binaryBase64);
@@ -364,7 +364,7 @@ export const TypeView = memo(function TypeView(props: {
           toast("Changes saved", "save");
         }
       } else if (path) {
-        const backup = await backupExisting(path);
+        const backup = await backupExisting(path, "type");
         await saveTextFile(path, xml);
         setBaselineXml(xml);
         setLastExportAt(Date.now());
@@ -584,7 +584,7 @@ export const TypeView = memo(function TypeView(props: {
             saving={saving}
             onReset={resetChanges}
             onSave={() => void saveChanges()}
-            description="Save writes this YTYP to disk. A backup is created when replacing an existing file."
+            description="Save writes this YTYP to disk. Backups go next to the file and under AppData."
           />
         </div>
       )}

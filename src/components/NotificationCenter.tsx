@@ -114,7 +114,7 @@ export function NotificationCenter() {
             className="fixed inset-0 z-40 cursor-default"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute right-0 bottom-[calc(100%+8px)] z-50 flex w-[360px] max-w-[min(360px,calc(100vw-24px))] flex-col overflow-hidden rounded-md border border-line-soft bg-[color-mix(in_oklch,var(--panel)_97%,black)] shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
+          <div className="absolute right-0 bottom-[calc(100%+8px)] z-50 flex w-[360px] max-w-[min(360px,calc(100vw-24px))] flex-col overflow-hidden rounded-md border border-line-soft bg-panel-elevated shadow-[0_8px_28px_rgba(0,0,0,0.45)]">
             <div className="flex h-9 shrink-0 items-center justify-between border-b border-line-soft px-3">
               <span className="text-[12px] font-medium text-bright">Notifications</span>
               <div className="flex items-center gap-0.5">

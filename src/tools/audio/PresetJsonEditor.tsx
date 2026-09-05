@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { AlignLeft, ArrowLeft, Check, RotateCcw } from "lucide-react";
+import { AlignLeft, ArrowLeft, Check, ListRestart, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { catalogJson, parseAudioCatalog, type AudioPreset } from "@/domain/audio";
+import { ConfirmDialog } from "@/components/Dialogs";
+import {
+  catalogJson,
+  DEFAULT_AUDIO,
+  parseAudioCatalog,
+  validateAudioCatalog,
+  type AudioPreset,
+} from "@/domain/audio";
 import { cn } from "@/lib/utils";
 
-/** VS Code Dark+ JSON token colors - text only */
 const VS = {
   key: "#9cdcfe",
   string: "#ce9178",
@@ -138,12 +144,7 @@ function highlightJson(source: string): string {
 function tryParseCatalog(text: string): { ok: true; count: number } | { ok: false; error: string } {
   try {
     const next = parseAudioCatalog(text);
-    if (next.length === 0) return { ok: false, error: "Catalog must include at least one preset." };
-    for (const row of next) {
-      if (!row.name?.trim() || !row.Sounds?.trim() || !row.TuningParams?.trim()) {
-        return { ok: false, error: "Every preset needs name, Sounds, and TuningParams." };
-      }
-    }
+    validateAudioCatalog(next);
     return { ok: true, count: next.length };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Invalid JSON" };
@@ -160,8 +161,10 @@ export function PresetJsonEditor({
   onApply: (catalog: AudioPreset[]) => void;
 }) {
   const baseline = useMemo(() => catalogJson(catalog), [catalog]);
+  const defaultsText = useMemo(() => catalogJson(DEFAULT_AUDIO), []);
   const [text, setText] = useState(baseline);
   const [error, setError] = useState<string | null>(null);
+  const [confirmBack, setConfirmBack] = useState(false);
   const guttersRef = useRef<HTMLDivElement>(null);
   const highlightRef = useRef<HTMLPreElement>(null);
   const areaRef = useRef<HTMLTextAreaElement>(null);
@@ -246,7 +249,13 @@ export function PresetJsonEditor({
             variant="ghost"
             size="sm"
             className="h-8 gap-1.5 text-muted-foreground"
-            onClick={onBack}
+            onClick={() => {
+              if (dirty) {
+                setConfirmBack(true);
+                return;
+              }
+              onBack();
+            }}
           >
             <ArrowLeft className="size-3.5" strokeWidth={1.75} />
             Doors
@@ -287,6 +296,20 @@ export function PresetJsonEditor({
           >
             <RotateCcw className="size-3.5" strokeWidth={1.75} />
             Revert
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1.5 text-muted-foreground"
+            disabled={text === defaultsText}
+            onClick={() => {
+              setText(defaultsText);
+              setError(null);
+            }}
+          >
+            <ListRestart className="size-3.5" strokeWidth={1.75} />
+            Reset to default
           </Button>
           <Button type="button" size="sm" disabled={!live.ok} onClick={apply}>
             Apply catalog
@@ -358,6 +381,18 @@ export function PresetJsonEditor({
         )}
         <span className="ml-auto hidden sm:inline">Ctrl+Enter apply · Tab indent</span>
       </div>
+
+      <ConfirmDialog
+        open={confirmBack}
+        title="Discard preset edits?"
+        body="JSON changes are not applied yet. Leave without applying?"
+        danger
+        onCancel={() => setConfirmBack(false)}
+        onConfirm={() => {
+          setConfirmBack(false);
+          onBack();
+        }}
+      />
     </div>
   );
 }

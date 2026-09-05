@@ -46,6 +46,7 @@
   --color-editor: var(--editor);
   --color-panel: var(--panel);
   --color-panel-2: var(--panel-2);
+  --color-panel-elevated: var(--panel-elevated);
   --color-hover: var(--hover);
   --color-active: var(--active);
   --color-line: var(--line);
@@ -110,6 +111,7 @@
   --editor: oklch(0.985 0.002 250);
   --panel: oklch(0.97 0.01 250);
   --panel-2: oklch(0.94 0.015 250);
+  --panel-elevated: oklch(0.99 0.005 250);
   --hover: oklch(0.94 0.015 250);
   --active: oklch(0.92 0.03 250);
   --line: oklch(0.86 0.015 250);
@@ -161,6 +163,7 @@
   --editor: oklch(0.16 0.018 255);
   --panel: oklch(0.19 0.02 255);
   --panel-2: oklch(0.23 0.022 255);
+  --panel-elevated: oklch(0.175 0.018 255);
   --hover: oklch(0.22 0.022 255);
   --active: oklch(0.28 0.04 255);
   --line: oklch(0.35 0.025 255);
@@ -365,7 +368,7 @@ body,
   align-items: flex-start !important;
   gap: 10px !important;
   border: 1px solid var(--line-soft) !important;
-  background: color-mix(in oklch, var(--panel) 97%, black) !important;
+  background: var(--panel-elevated) !important;
   color: var(--bright) !important;
   border-radius: 6px !important;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45) !important;

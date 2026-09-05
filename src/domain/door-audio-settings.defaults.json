@@ -1,0 +1,31 @@
+{
+  "availableDoorSound": [
+    { "name": "24/7 Door", "Sounds": "door_swing_glass_and_metal_shop_beep", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Pushed Door", "Sounds": "door_swing_exit_wood_no_mech", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Elevator Door", "Sounds": "door_sliding_lift_fib", "TuningParams": "dtp_fib_elevator_door", "MaxOcclusion": 0.7 },
+    { "name": "Jail Door", "Sounds": "hash_0d2cd7d4", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Sliding Door", "Sounds": "door_slide_manual", "TuningParams": "dtp_sliding_door_interior", "MaxOcclusion": 0.7 },
+    { "name": "Normal Gate", "Sounds": "door_garage", "TuningParams": "dtp_mp_garage_door", "MaxOcclusion": 0.7 },
+    { "name": "Slide Gate", "Sounds": "door_sliding_metal_gate_bars", "TuningParams": "dtp_default_sliding_horizontal", "MaxOcclusion": 0.7 },
+    { "name": "Slide Gate 2", "Sounds": "door_garage_heavy_slider", "TuningParams": "dtp_default_sliding_horizontal", "MaxOcclusion": 0.7 },
+    { "name": "Up-Down Gate", "Sounds": "door_garage_ls_customs", "TuningParams": "dtp_default_sliding_vertical", "MaxOcclusion": 0.7 },
+    { "name": "Door with a bell", "Sounds": "door_swing_glass_and_metal_shop_bell", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Wood Door Swing LC", "Sounds": "wood_door", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Shop Door Swing LC", "Sounds": "shop_door", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Glass Door Swing LC", "Sounds": "glass_door", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Metal Door Swing LC", "Sounds": "metal_door", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Diner Door Swing LC", "Sounds": "diner_door", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Exit Door Swing LC", "Sounds": "exit_door", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Metal Vault Door Swing LC", "Sounds": "metal_vault_door", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Prison Yard Door Swing LC", "Sounds": "prison_yard_door", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Corrugated Door Gate Swing LC", "Sounds": "corrugated_door_gate", "TuningParams": "dtp_default_swing", "MaxOcclusion": 0.7 },
+    { "name": "Door Slide Chainlink LC", "Sounds": "chainlink_door_gate", "TuningParams": "dtp_chainlink_slide", "MaxOcclusion": 0.7 },
+    { "name": "Chainlink Door Gate Swing LC", "Sounds": "chainlink_door_gate", "TuningParams": "dtp_chainlink_swing_big", "MaxOcclusion": 0.7 },
+    { "name": "Door Garage LC", "Sounds": "door_garage", "TuningParams": "dtp_mp_garage_door", "MaxOcclusion": 0.7 },
+    { "name": "Door PayNSpray LC", "Sounds": "door_garage_ls_customs", "TuningParams": "dtp_default_sliding_vertical", "MaxOcclusion": 0.7 },
+    { "name": "Metal Fence 1", "Sounds": "hash_b7e1088b", "TuningParams": "hash_001b152f", "MaxOcclusion": 0.7 },
+    { "name": "Metal Fence 2", "Sounds": "hash_c5f4bC63", "TuningParams": "hash_8c484a48", "MaxOcclusion": 0.7 },
+    { "name": "Metal Light Door", "Sounds": "hash_662e5b7d", "TuningParams": "hash_7aa46069", "MaxOcclusion": 0.7 },
+    { "name": "Hydraulic Door", "Sounds": "hash_d5377a40", "TuningParams": "hash_c85140b1", "MaxOcclusion": 0.7 }
+  ]
+}

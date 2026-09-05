@@ -255,7 +255,7 @@ export const NamesView = memo(function NamesView({
       return;
     }
     try {
-      const backup = await backupExisting(importPath);
+      const backup = await backupExisting(importPath, "names");
       await saveTextFile(importPath, nametableBytes(next));
       setBaseline([...next]);
       setConfirmReplace(false);

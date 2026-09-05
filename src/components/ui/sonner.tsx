@@ -25,11 +25,11 @@ export function Toaster(props: ToasterProps) {
       }}
       style={
         {
-          "--normal-bg": "color-mix(in oklch, var(--panel) 97%, black)",
+          "--normal-bg": "var(--panel-elevated)",
           "--normal-text": "var(--bright)",
           "--normal-border": "var(--line-soft)",
           "--border-radius": "6px",
-          "--error-bg": "color-mix(in oklch, var(--panel) 97%, black)",
+          "--error-bg": "var(--panel-elevated)",
           "--error-text": "var(--bright)",
           "--error-border": "var(--line-soft)",
         } as CSSProperties

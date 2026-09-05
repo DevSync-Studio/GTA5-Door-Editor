@@ -10,7 +10,7 @@ import { VirtualList } from "@/components/VirtualList";
 import { useNativeDrop } from "@/hooks/useNativeDrop";
 import { useWorkspaceActions } from "@/lib/workspaceActions";
 import { mergeTuningFiles, mergeTuningFilesMany, parseTuning, type MergeResult } from "@/domain/tuning";
-import { backupExisting, openTextFile, saveTextFileAs, type NativeFile } from "@/lib/files";
+import { openTextFile, saveTextFileAs, type NativeFile } from "@/lib/files";
 import { cn } from "@/lib/utils";
 
 type Slot = {
@@ -240,8 +240,6 @@ export const MergeView = memo(function MergeView({
         [{ title: "YMT", extensions: ["ymt", "xml"] }],
       );
       if (!saved) return;
-      if (main.path) await backupExisting(main.path);
-      onDirty(false);
       setLastExportAt(Date.now());
       toast(
         nothingNew

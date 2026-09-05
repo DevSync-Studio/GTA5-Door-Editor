@@ -15,7 +15,6 @@ import { useNativeDrop } from "@/hooks/useNativeDrop";
 import { useWorkspaceActions } from "@/lib/workspaceActions";
 import {
   audioXml,
-  DEFAULT_AUDIO,
   matchPresetIndex,
   normalizeDoorName,
   parseAudioCatalog,
@@ -57,18 +56,12 @@ function assignmentEqual(a: AudioAssignment, b: AudioAssignment): boolean {
 type AudioSession = {
   doors: AudioDoor[];
   assignments: AudioAssignment[];
-  catalog: AudioPreset[];
 };
 
-function cloneSession(
-  doors: AudioDoor[],
-  assignments: AudioAssignment[],
-  catalog: AudioPreset[],
-): AudioSession {
+function cloneSession(doors: AudioDoor[], assignments: AudioAssignment[]): AudioSession {
   return {
     doors: doors.map((d) => ({ ...d })),
     assignments: assignments.map((a) => ({ ...a })),
-    catalog: catalog.map((c) => ({ ...c })),
   };
 }
 
@@ -174,8 +167,8 @@ export const AudioView = memo(function AudioView({
     setSelected(0);
     setDraft(blank);
     setBaseline(blank);
-    setSession(cloneSession(nextDoors, [], catalog));
-  }, [doors.length, onDoors, catalog]);
+    setSession(cloneSession(nextDoors, []));
+  }, [doors.length, onDoors]);
 
   const door = doors[Math.min(selected, Math.max(doors.length - 1, 0))];
   const isCustom = draft.preset === "custom";
@@ -183,7 +176,7 @@ export const AudioView = memo(function AudioView({
   const formDirty = !assignmentEqual(draft, baseline);
   const listDirty =
     !!session &&
-    !sessionEqual(session, cloneSession(doors, assignments, catalog));
+    !sessionEqual(session, cloneSession(doors, assignments));
   const sessionDirty = formDirty || listDirty;
 
   useEffect(() => {
@@ -267,7 +260,7 @@ export const AudioView = memo(function AudioView({
         setDraft(first);
         setBaseline(first);
         setCustomName("");
-        setSession(cloneSession(nextDoors, nextAssignments, catalog));
+        setSession(cloneSession(nextDoors, nextAssignments));
         toast(
           entries.length === 1
             ? "Imported 1 door from DAT151"
@@ -307,7 +300,6 @@ export const AudioView = memo(function AudioView({
     }
     onDoors(session.doors.map((d) => ({ ...d })));
     onAssignments(session.assignments.map((a) => ({ ...a })));
-    onCatalog(session.catalog.map((c) => ({ ...c })));
     const id = session.doors[Math.min(selected, Math.max(session.doors.length - 1, 0))]?.id;
     const current =
       (id && session.assignments.find((row) => row.id === id)) ||
@@ -321,7 +313,7 @@ export const AudioView = memo(function AudioView({
   const saveSession = () => {
     const nextAssignments = commitDraft();
     if (!nextAssignments) return;
-    setSession(cloneSession(doors, nextAssignments, catalog));
+    setSession(cloneSession(doors, nextAssignments));
     toast("Session saved - Export to write a file.", "save");
   };
 
@@ -354,7 +346,7 @@ export const AudioView = memo(function AudioView({
         [{ title: "REL XML", extensions: ["xml"] }],
       );
       if (!saved) return;
-      setSession(cloneSession(doors, nextAssignments, catalog));
+      setSession(cloneSession(doors, nextAssignments));
       setLastExportAt(Date.now());
       toast(`Exported ${saved.name}`, "export");
     } catch (error) {
@@ -374,9 +366,9 @@ export const AudioView = memo(function AudioView({
       return;
     }
     try {
-      const backup = await backupExisting(importPath);
+      const backup = await backupExisting(importPath, "audio");
       await saveTextFile(importPath, buildExportXml(nextAssignments));
-      setSession(cloneSession(doors, nextAssignments, catalog));
+      setSession(cloneSession(doors, nextAssignments));
       setConfirmReplace(false);
       setLastExportAt(Date.now());
       toast(backup ? "Imported file replaced (backup created)" : "Imported file replaced", "export");
@@ -436,6 +428,9 @@ export const AudioView = memo(function AudioView({
     onCatalog(next);
     const rematched = rematchAssignments(assignments, next);
     onAssignments(rematched);
+    if (session) {
+      setSession(cloneSession(doors, rematched));
+    }
     if (door) {
       const current = rematched.find((row) => row.id === door.id);
       if (current) {
@@ -811,13 +806,12 @@ export const AudioView = memo(function AudioView({
       <ConfirmDialog
         open={confirmReset}
         title="Reset audio"
-        body="Clear doors and assignments. Default presets are restored."
+        body="Clear doors and assignments. Preset catalog is left unchanged."
         danger
         onCancel={() => setConfirmReset(false)}
         onConfirm={() => {
           onDoors([]);
           onAssignments([]);
-          onCatalog(DEFAULT_AUDIO);
           setImportPath(null);
           setSession(null);
           setConfirmReset(false);

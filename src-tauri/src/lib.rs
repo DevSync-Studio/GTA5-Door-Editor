@@ -36,6 +36,36 @@ fn file_name(path: &Path) -> String {
         .unwrap_or_else(|| path.to_string_lossy().into_owned())
 }
 
+const AUDIO_CATALOG_FILE: &str = "door-audio-settings.json";
+
+fn audio_catalog_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    use tauri::Manager;
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("App data folder unavailable: {e}"))?;
+    Ok(dir.join(AUDIO_CATALOG_FILE))
+}
+
+#[tauri::command]
+fn load_audio_catalog(app: tauri::AppHandle) -> Result<Option<String>, String> {
+    let path = audio_catalog_path(&app)?;
+    if !path.is_file() {
+        return Ok(None);
+    }
+    std::fs::read_to_string(&path).map(Some).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn save_audio_catalog(app: tauri::AppHandle, contents: String) -> Result<(), String> {
+    let path = audio_catalog_path(&app)?;
+    let Some(parent) = path.parent() else {
+        return Err("Invalid catalog path.".into());
+    };
+    std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    std::fs::write(&path, contents.as_bytes()).map_err(|e| e.to_string())
+}
+
 fn read_opened(path: PathBuf) -> Result<OpenedFile, String> {
     let text = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
     Ok(OpenedFile {
@@ -313,18 +343,46 @@ fn save_text_file_as(
 }
 
 #[tauri::command]
-fn backup_existing(path: String) -> Result<Option<String>, String> {
+fn backup_existing(
+    app: tauri::AppHandle,
+    path: String,
+    tool: String,
+) -> Result<Option<String>, String> {
+    use tauri::Manager;
+
     let source = Path::new(&path);
     if !source.exists() {
         return Ok(None);
     }
+    let tool = match tool.as_str() {
+        "tuning" | "type" | "audio" | "names" | "merge" => tool,
+        _ => return Err("Unknown backup tool.".into()),
+    };
+
     let stamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(|e| e.to_string())?
         .as_secs();
-    let backup = format!("{path}.{stamp}.bak");
-    std::fs::copy(source, &backup).map_err(|e| e.to_string())?;
-    Ok(Some(backup))
+    let file_name = source
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "file".into());
+
+    let app_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("App data folder unavailable: {e}"))?
+        .join("backups")
+        .join(&tool);
+    std::fs::create_dir_all(&app_dir).map_err(|e| e.to_string())?;
+    let app_backup = app_dir.join(format!("{file_name}.{stamp}.bak"));
+    std::fs::copy(source, &app_backup).map_err(|e| e.to_string())?;
+
+    // Best-effort sibling backup next to the original file.
+    let sibling = format!("{path}.{stamp}.bak");
+    let _ = std::fs::copy(source, &sibling);
+
+    Ok(Some(app_backup.to_string_lossy().into_owned()))
 }
 
 #[tauri::command]
@@ -479,7 +537,9 @@ pub fn run() {
             backup_existing,
             pick_directory,
             reveal_in_explorer,
-            open_external_url
+            open_external_url,
+            load_audio_catalog,
+            save_audio_catalog
         ])
         .run(tauri::generate_context!())
         .expect("error while running GTA5 Door Editor");
