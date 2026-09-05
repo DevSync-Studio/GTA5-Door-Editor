@@ -1,5 +1,5 @@
 import { useSyncExternalStore, useState } from "react";
-import { BadgeInfo, Bell, BellOff, Download, ListX, OctagonAlert, SaveCheck, X } from "lucide-react";
+import { BadgeInfo, Bell, BellOff, Upload, ListX, OctagonAlert, SaveCheck, X } from "lucide-react";
 import {
   clearNotifications,
   dismissNotification,
@@ -40,7 +40,7 @@ function iconFor(kind: AppNotification["kind"]) {
     case "save":
       return { Icon: SaveCheck, className: "text-success" };
     case "export":
-      return { Icon: Download, className: "text-blue" };
+      return { Icon: Upload, className: "text-blue" };
     default:
       return { Icon: BadgeInfo, className: "text-blue" };
   }

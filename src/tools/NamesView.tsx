@@ -301,7 +301,7 @@ export const NamesView = memo(function NamesView({
             ) : null}
           </Button>
           <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => void pickImport()}>
-            <Upload className="size-3.5" strokeWidth={1.75} />
+            <Download className="size-3.5" strokeWidth={1.75} />
             Import
           </Button>
           <Button
@@ -311,7 +311,7 @@ export const NamesView = memo(function NamesView({
             disabled={names.length === 0 && !formDirty}
             onClick={() => void exportTable()}
           >
-            <Download className="size-3.5" strokeWidth={1.75} />
+            <Upload className="size-3.5" strokeWidth={1.75} />
             Export
           </Button>
           {importPath ? (

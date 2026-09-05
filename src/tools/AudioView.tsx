@@ -523,7 +523,7 @@ export const AudioView = memo(function AudioView({
                 if (file) loadDat151(file);
               }}
             >
-              <Upload className="size-3.5" strokeWidth={1.75} />
+              <Download className="size-3.5" strokeWidth={1.75} />
               Import REL
             </Button>
             <Button
@@ -532,7 +532,7 @@ export const AudioView = memo(function AudioView({
               className="gap-1.5"
               onClick={() => void exportRel()}
             >
-              <Download className="size-3.5" strokeWidth={1.75} />
+              <Upload className="size-3.5" strokeWidth={1.75} />
               Export REL
             </Button>
             {importPath ? (

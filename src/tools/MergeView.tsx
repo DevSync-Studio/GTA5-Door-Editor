@@ -280,7 +280,7 @@ export const MergeView = memo(function MergeView({
             disabled={!result}
             onClick={() => void exportMerged()}
           >
-            <Download className="size-3.5" strokeWidth={1.75} />
+            <Upload className="size-3.5" strokeWidth={1.75} />
             Export
           </Button>
           <Button
@@ -308,7 +308,7 @@ export const MergeView = memo(function MergeView({
               className="h-8 gap-1.5 rounded-md px-3 text-[12px]"
               onClick={() => void pickMain()}
             >
-              <Upload className="size-3.5" strokeWidth={1.75} />
+              <Download className="size-3.5" strokeWidth={1.75} />
               {main ? "Replace" : "Import"}
             </Button>
           </div>
@@ -333,7 +333,7 @@ export const MergeView = memo(function MergeView({
                 className="flex w-full flex-col items-center gap-2.5 rounded-lg border border-dashed border-line-soft bg-panel/30 px-3 py-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/5"
               >
                 <div className="flex size-9 items-center justify-center rounded-lg border border-border bg-panel-2/80 text-mint">
-                  <Upload className="size-4" strokeWidth={1.75} />
+                  <Download className="size-4" strokeWidth={1.75} />
                 </div>
                 <div>
                   <div className="text-[12px] font-medium text-bright">Import main .ymt</div>

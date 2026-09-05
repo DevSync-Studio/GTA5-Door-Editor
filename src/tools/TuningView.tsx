@@ -239,7 +239,7 @@ function TuningDropZone({
               : "border-dashed border-line bg-transparent shadow-none",
           )}
         >
-          <Upload
+          <Download
             className={cn(
               "size-7 transition-colors duration-150 sm:size-8",
               isDragging ? "text-primary" : "text-faint",
@@ -615,7 +615,7 @@ export const TuningView = memo(function TuningView(props: {
                   className="gap-1.5"
                   disabled={saving}
                 >
-                  <Download className="size-3.5" strokeWidth={1.75} />
+                  <Upload className="size-3.5" strokeWidth={1.75} />
                   Export
                   <ChevronDown className="size-3.5 opacity-70" strokeWidth={1.75} />
                 </Button>
@@ -625,7 +625,7 @@ export const TuningView = memo(function TuningView(props: {
                   className="gap-2"
                   onClick={() => void exportAs()}
                 >
-                  <Download className="size-3.5" strokeWidth={1.75} />
+                  <Upload className="size-3.5" strokeWidth={1.75} />
                   doortuning.ymt only
                 </DropdownMenuItem>
                 <DropdownMenuItem

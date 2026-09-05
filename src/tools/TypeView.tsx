@@ -8,7 +8,7 @@ import {
   type ChangeEvent,
   type DragEvent,
 } from "react";
-import { FileMinus, Save, Upload } from "lucide-react";
+import { Download, FileMinus, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -147,7 +147,7 @@ function TypeDropZone({
             : "border-dashed border-line bg-transparent shadow-none",
         )}
       >
-        <Upload
+        <Download
           className={cn(
             "size-7 transition-colors duration-150 sm:size-8 lg:size-9",
             isDragging ? "text-primary" : "text-faint",

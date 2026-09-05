@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { Download, SaveCheck } from "lucide-react";
+import { Upload, SaveCheck } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import {
   getNotificationsMuted,
@@ -45,7 +45,7 @@ export function toast(message: string, opts: ToastKind = "info") {
   if (kind === "export") {
     sonnerToast.message(message, {
       id: key,
-      icon: createElement(Download, { className: "size-4 text-blue", strokeWidth: 1.75 }),
+      icon: createElement(Upload, { className: "size-4 text-blue", strokeWidth: 1.75 }),
     });
     return;
   }

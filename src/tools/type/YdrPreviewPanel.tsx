@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
-import { Move3D, Focus, Pause, Play, RotateCcw, Upload, X } from "lucide-react";
+import { Move3D, Focus, Pause, Play, RotateCcw, Download, X } from "lucide-react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Button } from "@/components/ui/button";
@@ -776,7 +776,7 @@ export function YdrPreviewPanel({
             {loading ? (
               <RotateCcw className="size-3.5 animate-spin" strokeWidth={1.75} />
             ) : (
-              <Upload className="size-3.5" strokeWidth={1.75} />
+              <Download className="size-3.5" strokeWidth={1.75} />
             )}
             {loading ? "Loading..." : preview ? "Replace" : "Import"}
           </Button>
