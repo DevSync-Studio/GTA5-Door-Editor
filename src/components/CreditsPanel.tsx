@@ -18,7 +18,7 @@ type CreditEntry = {
 
 const CREDITS: CreditEntry[] = [
   {
-    name: "Subham GG",
+    name: "SubhamGG",
     handle: "subhamgg",
     avatar: "https://github.com/subhamgg.png?size=96",
     messageKey: "credits.subhamgg.message",

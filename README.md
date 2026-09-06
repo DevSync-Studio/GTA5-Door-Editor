@@ -77,7 +77,7 @@ This app edits those files after you already have them on disk. It is not a worl
 
 Huge thanks to everyone who helped make this tool possible:
 
-- **[Subham GG](https://github.com/subhamgg)** — for the idea to build this app, and for pushing it to be the best it can be
+- **[SubhamGG](https://github.com/subhamgg)** — for the idea to build this app, and for pushing it to be the best it can be
 - **[tiwabs](https://github.com/tiwabs)** — door audio preset catalog, drawn from [twAudioDoorTool](https://github.com/tiwabs/twAudioDoorTool)
 - **[Hedgehog Technologies](https://github.com/Hedgehog-Technologies)** — doortuning field notes and FiveM resource layout from [doortuning-example](https://github.com/Hedgehog-Technologies/doortuning-example)
 - **[dexyfex / CodeWalker](https://github.com/dexyfex/CodeWalker)** — YTYP / YDR / YTD layouts and hashes used as a format reference only

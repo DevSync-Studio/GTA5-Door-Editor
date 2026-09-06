@@ -49,8 +49,20 @@ export function subscribeLocale(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
+function isCorruptMessage(value: string | undefined): boolean {
+  if (value == null || value.length === 0) return true;
+  if (value.includes("\uFFFD")) return true;
+  // CJK packs that lost glyphs often collapse to runs of "?"
+  const q = (value.match(/\?/g) ?? []).length;
+  return q >= 4 && q / value.length > 0.25;
+}
+
 export function t(key: MessageKey, vars?: Record<string, string | number>): string {
-  const raw = table[key] ?? en[key] ?? String(key);
+  const localized = table[key];
+  const raw =
+    !isCorruptMessage(localized) && localized != null
+      ? localized
+      : (en[key] ?? String(key));
   if (!vars) return raw;
   return raw.replace(/\{(\w+)\}/g, (_, name: string) =>
     vars[name] != null ? String(vars[name]) : `{${name}}`,

@@ -31,7 +31,7 @@ export const it: Messages = {
   "app.loading": "Caricamento...",
   "app.closeConfirm.title": "Modifiche non salvate",
   "app.closeConfirm.body":
-    "Uno o pi� strumenti hanno ancora lavoro non salvato. Chiudere comunque e perdere queste modifiche?",
+    "Uno o più strumenti hanno ancora lavoro non salvato. Chiudere comunque e perdere queste modifiche?",
   "app.toast.audioPresetsInvalid":
     "I preset audio salvati non erano validi: ripristino dei valori predefiniti.",
   "app.toast.audioPresetsSaveFailed": "Impossibile salvare i preset audio.",
@@ -58,7 +58,7 @@ export const it: Messages = {
   "status.counts.archetypes": "{count} archetipi",
   "status.counts.doors": "{count} porte",
   "status.counts.names": "{count} nomi",
-  "status.counts.merge": "{adds} aggiunte � {conflicts} conflitti",
+  "status.counts.merge": "{adds} aggiunte · {conflicts} conflitti",
   "status.counts.conflicting": "{count} in conflitto",
   "status.format.xml": "XML",
   "status.format.ymt": "YMT",
@@ -163,7 +163,7 @@ export const it: Messages = {
   "tuning.dialog.export": "Esporta doortuning.ymt",
   "tuning.dialog.filterYmtOnly": "YMT",
   "tuning.dialog.pickResources":
-    "Scegli la cartella resources (es. resources\\[main]): la cartella della risorsa verr� creata al suo interno",
+    "Scegli la cartella resources (es. resources\\[main]): la cartella della risorsa verrà creata al suo interno",
   "tuning.export": "Esporta",
   "tuning.export.ymtOnly": "solo doortuning.ymt",
   "tuning.export.fivemBundle": "Pacchetto risorsa FiveM",
@@ -203,7 +203,7 @@ export const it: Messages = {
     "Rimuovere la mappatura porta per {model}?",
   "tuning.confirm.replace.body":
     "Sovrascrivere il file importato su disco?\n{path}",
-  "tuning.door.subtitle": "Mappatura porta ? tuning",
+  "tuning.door.subtitle": "Mappatura porta → tuning",
   "tuning.door.openTuning": "Apri tuning",
   "tuning.door.openTuningTitle": "Apri {name}",
   "tuning.door.tuningNotFound": "Tuning non trovato",
@@ -221,16 +221,16 @@ export const it: Messages = {
   "tuning.toast.tuningRemoved": "Tuning rimosso",
   "tuning.toast.doorRemoved": "Mappatura porta rimossa",
   "tuning.toast.tuningRenamed": "Tuning rinominato",
-  "tuning.toast.tuningMissing": "Quel tuning non � in questo file.",
-  "tuning.toast.uniqueNameRequired": "� richiesto un nome tuning univoco.",
-  "tuning.toast.nameExists": "Quel nome tuning esiste gi�.",
-  "tuning.toast.modelRequired": "Il nome del modello � obbligatorio.",
+  "tuning.toast.tuningMissing": "Quel tuning non è in questo file.",
+  "tuning.toast.uniqueNameRequired": "È richiesto un nome tuning univoco.",
+  "tuning.toast.nameExists": "Quel nome tuning esiste già.",
+  "tuning.toast.modelRequired": "Il nome del modello è obbligatorio.",
   "tuning.toast.addTuningFirst": "Aggiungi prima un tuning.",
   "tuning.toast.replaced": "File importato sostituito",
   "tuning.toast.replacedBackup":
     "File importato sostituito (backup creato)",
   "tuning.toast.resourceExported":
-    'Risorsa "{name}" esportata ? resources:/{name}/doortuning',
+    'Risorsa "{name}" esportata → resources:/{name}/doortuning',
   "tuning.toast.resourceFailed": "Esportazione risorsa non riuscita",
 
   "type.title": "Editor Door Type",
@@ -303,8 +303,8 @@ export const it: Messages = {
   "audio.deleteDoor": "Elimina {name}",
   "audio.deleteDoorFallback": "porta",
   "audio.detail.hint":
-    "Esporta come d_tuo_nome � Salva � solo sessione � Esporta scrive il REL",
-  "audio.section.identity": "Identit�",
+    "Esporta come d_tuo_nome · Salva è solo sessione · Esporta scrive il REL",
+  "audio.section.identity": "Identità",
   "audio.section.identityHint":
     "Nome audio porta usato in DAT151. Il prefisso d_ viene aggiunto automaticamente al salvataggio sessione.",
   "audio.field.doorName": "Nome porta",
@@ -367,7 +367,7 @@ export const it: Messages = {
   "names.title": "Generatore nametable",
   "names.fromAudio": "Da Audio",
   "names.fromAudio.none": "Salva prima le porte in Audio",
-  "names.fromAudio.allListed": "Tutti i nomi Audio sono gi� elencati",
+  "names.fromAudio.allListed": "Tutti i nomi Audio sono già elencati",
   "names.fromAudio.addCount": "Aggiungi {count} nuovi nomi da Audio",
   "names.import": "Importa",
   "names.export": "Esporta",
@@ -384,7 +384,7 @@ export const it: Messages = {
   "names.remove": "Rimuovi {name}",
   "names.detail.hint":
     "Rinomina questa voce: gli spazi diventano underscore",
-  "names.section.identity": "Identit�",
+  "names.section.identity": "Identità",
   "names.section.identityHint":
     "Nome conservato in questa sessione. Esporta / Sostituisci importazione scrive il .dat151.nametable (inclusi i link dasl_ automatici).",
   "names.field.name": "Nome",
@@ -409,13 +409,13 @@ export const it: Messages = {
   "names.toast.saveAudioFirst":
     "Salva prima almeno una porta in Audio.",
   "names.toast.allFromAudio":
-    "Tutti i nomi porta Audio sono gi� nel nametable.",
+    "Tutti i nomi porta Audio sono già nel nametable.",
   "names.toast.addedOneFromAudio": "Aggiunto 1 nome da Audio",
   "names.toast.addedManyFromAudio": "Aggiunti {count} nomi da Audio",
   "names.toast.enterName": "Inserisci un nome.",
-  "names.toast.nameExists": "Quel nome esiste gi�.",
+  "names.toast.nameExists": "Quel nome esiste già.",
   "names.toast.added": "Aggiunto {name}",
-  "names.toast.nameEmpty": "Il nome non pu� essere vuoto.",
+  "names.toast.nameEmpty": "Il nome non può essere vuoto.",
   "names.toast.sessionSaved":
     "Sessione salvata: esporta o sostituisci l'importazione per scrivere un file.",
   "names.toast.removed": "Nome rimosso",
@@ -437,29 +437,29 @@ export const it: Messages = {
   "merge.main.import": "Importa",
   "merge.main.emptyTitle": "Importa .ymt principale",
   "merge.main.emptyHint": "Trascina un file o sfoglia",
-  "merge.main.stats": "{tunings} tuning � {mappings} mappature",
+  "merge.main.stats": "{tunings} tuning · {mappings} mappature",
   "merge.main.baseHint":
     "File base: in caso di conflitto restano queste voci.",
   "merge.incoming.needMain":
     "Importa prima il file principale, poi aggiungi qui i file in conflitto.",
   "merge.incoming.empty":
-    "Aggiungi uno o pi� file .ymt in conflitto per raccogliere tuning e mappature mancanti.",
+    "Aggiungi uno o più file .ymt in conflitto per raccogliere tuning e mappature mancanti.",
   "merge.incoming.add": "Aggiungi file in conflitto",
   "merge.incoming.status.new": "{count} nuovi",
   "merge.incoming.status.newWithConflicts":
-    "{adds} nuovi � {conflicts} conflitti",
-  "merge.incoming.status.covered": "Coperto � {count} conflitti",
-  "merge.incoming.status.alreadyCovered": "Gi� coperto",
-  "merge.incoming.status.fallback": "{tunings} tuning � {mappings} mappe",
+    "{adds} nuovi · {conflicts} conflitti",
+  "merge.incoming.status.covered": "Coperto · {count} conflitti",
+  "merge.incoming.status.alreadyCovered": "Già coperto",
+  "merge.incoming.status.fallback": "{tunings} tuning · {mappings} mappe",
   "merge.removeFile": "Rimuovi {name}",
   "merge.preview": "Anteprima",
   "merge.preview.merge": "Anteprima unione",
   "merge.preview.idle":
     "Aggiunge le voci mancanti. Il file principale vince sui conflitti.",
   "merge.preview.summary":
-    "{tunings} tuning � {mappings} mappature � {conflicts} conflitti",
-  "merge.preview.nothingConflicts": "Niente da aggiungere � {count} conflitti",
-  "merge.preview.nothingCovered": "Niente da aggiungere: gi� coperto.",
+    "{tunings} tuning · {mappings} mappature · {conflicts} conflitti",
+  "merge.preview.nothingConflicts": "Niente da aggiungere · {count} conflitti",
+  "merge.preview.nothingCovered": "Niente da aggiungere: già coperto.",
   "merge.tab.additions": "Aggiunte",
   "merge.tab.conflicts": "Conflitti",
   "merge.filter.additions": "Filtra aggiunte",
@@ -470,9 +470,9 @@ export const it: Messages = {
     "Aggiungi file in conflitto a sinistra per creare l'anteprima di unione.",
   "merge.empty.noConflicts": "Nessun conflitto",
   "merge.empty.nothingNew":
-    "Nessun nuovo tuning o mappatura da aggiungere. I file in conflitto sono gi� coperti dal principale.",
+    "Nessun nuovo tuning o mappatura da aggiungere. I file in conflitto sono già coperti dal principale.",
   "merge.conflicts.hintNothingNew":
-    "Il principale ha gi� questi nomi. Esporta non li cambier�.",
+    "Il principale ha già questi nomi. Esporta non li cambierà.",
   "merge.conflicts.hint":
     "Il principale vince quando entrambi i file condividono un nome tuning o una mappatura modello.",
   "merge.conflicts.col.type": "Tipo",
@@ -489,7 +489,7 @@ export const it: Messages = {
     "Cancella il file principale, tutti i file in conflitto e l'anteprima di unione.",
   "merge.toast.mergeFailed":
     "Impossibile unire questi file YMT. Verifica che siano XML doortuning validi.",
-  "merge.toast.mainSet": "File principale � {name}",
+  "merge.toast.mainSet": "File principale · {name}",
   "merge.toast.importMainFirst":
     "Importa prima il doortuning principale .ymt.",
   "merge.toast.skippedSameAsMain":
@@ -500,7 +500,7 @@ export const it: Messages = {
   "merge.toast.addedMany": "Aggiunti {count} file in conflitto",
   "merge.toast.importFailed": "Impossibile importare YMT",
   "merge.toast.exportedNothingNew":
-    "Esportato: nessuna nuova voce aggiunta (il principale le ha gi�).",
+    "Esportato: nessuna nuova voce aggiunta (il principale le ha già).",
   "merge.toast.exported": "YMT unito esportato.",
   "merge.toast.saveFailed": "Salvataggio non riuscito",
 
@@ -522,30 +522,30 @@ export const it: Messages = {
   "preview.empty.hint":
     "Seleziona insieme .ydr e .ytd, oppure trascinali entrambi. Accetta {ytdHint}. Gli YTD nella stessa cartella si caricano automaticamente dal disco.",
   "preview.origin": "Origine / cerniera",
-  "preview.selectBoth": "Seleziona entrambi � {ydr} � {ytdHint}",
+  "preview.selectBoth": "Seleziona entrambi · {ydr} · {ytdHint}",
   "preview.paused": "In pausa",
   "preview.noTuning": "Nessun doortuning collegato",
-  "preview.tuningChip": "Tuning � {name}",
-  "preview.tuningDefaultAngle": "90� def",
-  "preview.tuningRate": "velocit� {rate}",
-  "preview.tuningOmega": "? {omega}",
+  "preview.tuningChip": "Tuning · {name}",
+  "preview.tuningDefaultAngle": "90° def",
+  "preview.tuningRate": "velocità {rate}",
+  "preview.tuningOmega": "ω {omega}",
   "preview.tuningTaper": "taper",
-  "preview.motion.garage": "Garage � inclinazione + salita",
-  "preview.motion.sliding": "Scorrevole � verso l'origine",
-  "preview.motion.vertical": "Scorrevole verticale � +Y",
-  "preview.motion.barrier": "Barriera � rotazione braccio",
-  "preview.motion.rail": "Passaggio � rotazione braccio",
-  "preview.motion.normal": "Normale � yaw (cerniera all'origine)",
-  "preview.motion.unknown": "Sconosciuto � yaw (fallback)",
+  "preview.motion.garage": "Garage · inclinazione + salita",
+  "preview.motion.sliding": "Scorrevole · verso l'origine",
+  "preview.motion.vertical": "Scorrevole verticale · +Y",
+  "preview.motion.barrier": "Barriera · rotazione braccio",
+  "preview.motion.rail": "Passaggio · rotazione braccio",
+  "preview.motion.normal": "Normale · yaw (cerniera all'origine)",
+  "preview.motion.unknown": "Sconosciuto · yaw (fallback)",
   "preview.fallbackDoor": "Porta",
   "preview.tex.missingDrop": "Texture mancanti: trascina .ytd",
   "preview.tex.noneDrop": "Nessuna texture: trascina il .ytd corrispondente",
-  "preview.tex.embeddedYtd": "{count} tex � incorporate + YTD",
-  "preview.tex.embedded": "{count} tex � incorporate",
-  "preview.tex.ytd": "{count} tex � YTD",
+  "preview.tex.embeddedYtd": "{count} tex · incorporate + YTD",
+  "preview.tex.embedded": "{count} tex · incorporate",
+  "preview.tex.ytd": "{count} tex · YTD",
   "preview.tex.count": "{count} texture",
-  "preview.tex.someMissing": "� alcune mancanti",
-  "preview.tex.gen9": "� Gen9",
+  "preview.tex.someMissing": "· alcune mancanti",
+  "preview.tex.gen9": "· Gen9",
   "preview.toast.wrongYdrNamed":
     "YDR errato: usa {expected} (ricevuto {got}).",
   "preview.toast.wrongYdrHash":
@@ -554,11 +554,11 @@ export const it: Messages = {
     "YTD errato: usa {model}.ytd o {model}+....ytd (ricevuto {got}).",
   "preview.toast.loaded": "Caricato {name}",
   "preview.toast.loadedWithTextures":
-    "Caricato {name} � {count} texture",
+    "Caricato {name} · {count} texture",
   "preview.toast.loadedWithTexturesOther":
-    "Caricato {name} � {count} texture",
+    "Caricato {name} · {count} texture",
   "preview.toast.loadedNoTextures":
-    "Caricato {name} � nessuna texture (trascina .ytd se esterne)",
+    "Caricato {name} · nessuna texture (trascina .ytd se esterne)",
   "preview.toast.importYdrFirst":
     "Importa prima il .ydr, poi il .ytd.",
   "preview.toast.loadedYtd": "Caricata {count} texture da YTD",
@@ -580,7 +580,7 @@ export const it: Messages = {
   "preset.lines": "{count} righe",
   "preset.count": "{count} preset",
   "preset.jsonError": "Errore JSON",
-  "preset.hint": "Ctrl+Invio applica � Tab indenta",
+  "preset.hint": "Ctrl+Invio applica · Tab indenta",
   "preset.invalidJson": "JSON non valido",
   "preset.cannotFormat": "Impossibile formattare: JSON non valido",
   "preset.confirm.back.title": "Scartare le modifiche ai preset?",
@@ -600,13 +600,13 @@ export const it: Messages = {
   "form.triggerBox.min": "Minimo",
   "form.triggerBox.max": "Massimo",
   "form.label.radiusModifier": "Modificatore raggio",
-  "form.label.openRate": "Velocit� di apertura",
+  "form.label.openRate": "Velocità di apertura",
   "form.label.cosineThreshold": "Soglia coseno",
   "form.label.breakingImpulse": "Impulso di rottura",
   "form.label.massMultiplier": "Moltiplicatore massa",
   "form.label.weaponImpulse": "Impulso arma",
   "form.label.rotationLimit": "Limite di rotazione",
-  "form.label.angularVelocityLimit": "Limite velocit� angolare",
+  "form.label.angularVelocityLimit": "Limite velocità angolare",
   "form.label.closeRateTaper": "Attenuazione chiusura",
   "form.label.useAutoOpenTriggerBox": "Usa box di attivazione apertura automatica",
   "form.label.customTriggerBox": "Box di attivazione personalizzato",
@@ -625,31 +625,31 @@ export const it: Messages = {
   "form.help.AutoOpenRadiusModifier":
     "Scala il raggio del volume di apertura automatica usato per rilevare giocatori/veicoli.",
   "form.help.AutoOpenRate":
-    "Quanto velocemente la porta si apre automaticamente dopo un controllo di apertura valido. Pi� alto = pi� veloce.",
+    "Quanto velocemente la porta si apre automaticamente dopo un controllo di apertura valido. Più alto = più veloce.",
   "form.help.AutoOpenCosineAngleBetweenThreshold":
-    "Soglia del motore per i controlli di angolo di apertura automatica. Vanilla usa spesso -1; il significato esatto non � documentato.",
+    "Soglia del motore per i controlli di angolo di apertura automatica. Vanilla usa spesso -1; il significato esatto non è documentato.",
   "form.help.AutoOpenCloseRateTaper":
-    "Se abilitato, le porte automatiche vanilla spesso attenuano il movimento di chiusura. La curva esatta non � documentata.",
+    "Se abilitato, le porte automatiche vanilla spesso attenuano il movimento di chiusura. La curva esatta non è documentata.",
   "form.help.UseAutoOpenTriggerBox":
     "Usa il percorso del box di attivazione apertura automatica per questo tuning (controlla volume / box personalizzato).",
   "form.help.CustomTriggerBox":
     "Usa il min/max del box di attivazione personalizzato sotto invece della dimensione predefinita del volume di apertura automatica.",
   "form.help.TriggerBoxMinMax":
-    "Angoli min/max nello spazio locale del box di attivazione personalizzato (usato solo se il box personalizzato � attivo).",
+    "Angoli min/max nello spazio locale del box di attivazione personalizzato (usato solo se il box personalizzato è attivo).",
   "form.help.BreakableByVehicle":
-    "Se abilitato, un veicolo pu� rompere la porta (e il suo comportamento di apertura automatica) con impulso sufficiente.",
+    "Se abilitato, un veicolo può rompere la porta (e il suo comportamento di apertura automatica) con impulso sufficiente.",
   "form.help.BreakingImpulse":
     "Magnitudine dell'impulso fisico applicato quando la porta si rompe. 0 mantiene il valore predefinito / nessuno.",
   "form.help.ShouldLatchShut":
     "Se abilitato, una porta a battente si chiude a scatto appena torna alla posizione di riposo.",
   "form.help.MassMultiplier":
-    "Moltiplica la massa base della porta per la fisica. Pi� basso = pi� leggera; pi� alto = pi� pesante.",
+    "Moltiplica la massa base della porta per la fisica. Più basso = più leggera; più alto = più pesante.",
   "form.help.WeaponImpulseMultiplier":
     "Moltiplica quanto fortemente i colpi d'arma spingono la porta.",
   "form.help.RotationLimitAngle":
-    "Angolo massimo dalla posa di riposo che la porta pu� ruotare (radianti). 0 di solito significa usare il valore di gioco predefinito (~90�).",
+    "Angolo massimo dalla posa di riposo che la porta può ruotare (radianti). 0 di solito significa usare il valore di gioco predefinito (~90°).",
   "form.help.TorqueAngularVelocityLimit":
-    "Limita quanto velocemente la porta pu� girare (velocit� angolare). Pi� alto consente un movimento pi� snappy.",
+    "Limita quanto velocemente la porta può girare (velocità angolare). Più alto consente un movimento più snappy.",
   "form.help.StdDoorRotDir":
-    "In che direzione pu� aprirsi una porta a battente: entrambe, solo negativa o solo positiva.",
+    "In che direzione può aprirsi una porta a battente: entrambe, solo negativa o solo positiva.",
 };
