@@ -9,6 +9,7 @@ import {
   validateAudioCatalog,
   type AudioPreset,
 } from "@/domain/audio";
+import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils";
 
 const VS = {
@@ -144,13 +145,16 @@ function ensureTrailingNewline(value: string): string {
   return value.endsWith("\n") ? value : `${value}\n`;
 }
 
-function tryParseCatalog(text: string): { ok: true; count: number } | { ok: false; error: string } {
+function tryParseCatalog(
+  text: string,
+  invalidJson: string,
+): { ok: true; count: number } | { ok: false; error: string } {
   try {
     const next = parseAudioCatalog(text);
     validateAudioCatalog(next);
     return { ok: true, count: next.length };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Invalid JSON" };
+    return { ok: false, error: err instanceof Error ? err.message : invalidJson };
   }
 }
 
@@ -163,6 +167,7 @@ export function PresetJsonEditor({
   onBack: () => void;
   onApply: (catalog: AudioPreset[]) => void;
 }) {
+  const { t } = useLocale();
   const baseline = useMemo(() => ensureTrailingNewline(catalogJson(catalog)), [catalog]);
   const defaultsText = useMemo(() => ensureTrailingNewline(catalogJson(DEFAULT_AUDIO)), []);
   const [text, setText] = useState(baseline);
@@ -187,7 +192,7 @@ export function PresetJsonEditor({
 
   const dirty = text !== baseline;
   const lineCount = countLines(text);
-  const live = useMemo(() => tryParseCatalog(text), [text]);
+  const live = useMemo(() => tryParseCatalog(text, t("preset.invalidJson")), [text, t]);
   const lines = useMemo(
     () => Array.from({ length: lineCount }, (_, i) => String(i + 1)),
     [lineCount],
@@ -210,12 +215,12 @@ export function PresetJsonEditor({
       setEditorText(`${JSON.stringify(parsed, null, 2)}\n`);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Cannot format - invalid JSON");
+      setError(err instanceof Error ? err.message : t("preset.cannotFormat"));
     }
   };
 
   const apply = () => {
-    const result = tryParseCatalog(text);
+    const result = tryParseCatalog(text, t("preset.invalidJson"));
     if (!result.ok) {
       setError(result.error);
       return;
@@ -265,17 +270,17 @@ export function PresetJsonEditor({
             }}
           >
             <ArrowLeft className="size-3.5" strokeWidth={1.75} />
-            Doors
+            {t("preset.back")}
           </Button>
           <span className="text-line-soft">/</span>
           <span className="truncate font-mono text-[12px] text-bright">door-audio-settings.json</span>
           {dirty ? (
             <span className="shrink-0 rounded-md bg-warning/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide text-warning">
-              Modified
+              {t("preset.modified")}
             </span>
           ) : (
             <span className="shrink-0 rounded-md bg-mint/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide text-mint">
-              Synced
+              {t("preset.synced")}
             </span>
           )}
         </div>
@@ -288,7 +293,7 @@ export function PresetJsonEditor({
             onClick={formatJson}
           >
             <AlignLeft className="size-3.5" strokeWidth={1.75} />
-            Format
+            {t("preset.format")}
           </Button>
           <Button
             type="button"
@@ -302,7 +307,7 @@ export function PresetJsonEditor({
             }}
           >
             <RotateCcw className="size-3.5" strokeWidth={1.75} />
-            Revert
+            {t("preset.revert")}
           </Button>
           <Button
             type="button"
@@ -316,10 +321,10 @@ export function PresetJsonEditor({
             }}
           >
             <ListRestart className="size-3.5" strokeWidth={1.75} />
-            Reset to default
+            {t("preset.resetDefault")}
           </Button>
           <Button type="button" size="sm" disabled={!live.ok} onClick={apply}>
-            Apply catalog
+            {t("preset.apply")}
           </Button>
         </div>
       </div>
@@ -376,23 +381,23 @@ export function PresetJsonEditor({
       ) : null}
 
       <div className="flex h-9 shrink-0 items-center gap-x-3 border-t border-line-soft bg-sidebar/60 px-4 font-mono text-[11px] text-faint">
-        <span>{lineCount} lines</span>
+        <span>{t("preset.lines", { count: lineCount })}</span>
         <span className="text-line">·</span>
         {live.ok ? (
           <span className="inline-flex items-center gap-1 text-mint">
             <Check className="size-3" strokeWidth={2.5} />
-            {live.count} presets
+            {t("preset.count", { count: live.count })}
           </span>
         ) : (
-          <span className="text-destructive">JSON error</span>
+          <span className="text-destructive">{t("preset.jsonError")}</span>
         )}
-        <span className="ml-auto hidden sm:inline">Ctrl+Enter apply · Tab indent</span>
+        <span className="ml-auto hidden sm:inline">{t("preset.hint")}</span>
       </div>
 
       <ConfirmDialog
         open={confirmBack}
-        title="Discard preset edits?"
-        body="JSON changes are not applied yet. Leave without applying?"
+        title={t("preset.confirm.back.title")}
+        body={t("preset.confirm.back.body")}
         danger
         onCancel={() => setConfirmBack(false)}
         onConfirm={() => {

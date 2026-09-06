@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DOOR_FLAG_SUGGESTIONS } from "@/domain/constants";
+import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils";
 
 export function parseFlagTokens(value: string): string[] {
@@ -32,6 +33,7 @@ interface FlagTokensInputProps {
 }
 
 export function FlagTokensInput({ value, onChange, className }: FlagTokensInputProps) {
+  const { t } = useLocale();
   const [draft, setDraft] = useState("");
   const tokens = useMemo(() => parseFlagTokens(value), [value]);
 
@@ -87,7 +89,7 @@ export function FlagTokensInput({ value, onChange, className }: FlagTokensInputP
             <button
               type="button"
               className="inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label={`Remove ${token}`}
+              aria-label={t("form.flags.remove", { token })}
               onClick={() => remove(index)}
             >
               <X className="size-3.5" strokeWidth={2} />
@@ -101,7 +103,7 @@ export function FlagTokensInput({ value, onChange, className }: FlagTokensInputP
           onBlur={() => {
             if (draft.trim()) commit(draft);
           }}
-          placeholder={tokens.length ? "Add..." : "Type a flag, Enter to add"}
+          placeholder={tokens.length ? t("form.flags.placeholderMore") : t("form.flags.placeholderEmpty")}
           className="h-8 min-w-[7rem] flex-1 border-0 bg-transparent px-1 text-[13px] shadow-none focus-visible:border-0 focus-visible:ring-0 dark:bg-transparent"
         />
       </div>
@@ -114,7 +116,9 @@ export function FlagTokensInput({ value, onChange, className }: FlagTokensInputP
         >
           <SelectTrigger className="h-11 w-full min-w-0 data-[size=default]:h-11">
             <SelectValue
-              placeholder={available.length ? "Pick a known flag" : "No more known flags"}
+              placeholder={
+                available.length ? t("form.flags.pickKnown") : t("form.flags.noMoreKnown")
+              }
             />
           </SelectTrigger>
           <SelectContent position="popper" className="max-h-64">
@@ -127,7 +131,7 @@ export function FlagTokensInput({ value, onChange, className }: FlagTokensInputP
         </Select>
         {draft.trim() ? (
           <Button type="button" size="default" variant="outline" className="h-11 shrink-0" onClick={() => commit(draft)}>
-            Add
+            {t("form.flags.add")}
           </Button>
         ) : null}
       </div>

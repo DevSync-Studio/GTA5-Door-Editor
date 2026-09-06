@@ -19,6 +19,7 @@ import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { VirtualList } from "@/components/VirtualList";
 import { useNativeDrop, useNativeDragHighlight } from "@/hooks/useNativeDrop";
 import { useWorkspaceActions } from "@/lib/workspaceActions";
+import { useLocale } from "@/hooks/useLocale";
 import vanillaDoortuningXml from "@/assets/vanilla/doortuning.ymt?raw";
 import {
   appendTuning,
@@ -101,7 +102,7 @@ function isTuningFileName(fileName: string): boolean {
 async function readBrowserTuningFile(file: File): Promise<TuningFilePayload> {
   const extension = getTuningExtension(file.name);
   if (!extension) {
-    throw new Error("Unsupported file type. Use .ymt or .ymt.pso.xml.");
+    throw new Error("unsupported");
   }
   const text = await file.text();
   return { name: file.name, text, extension };
@@ -117,6 +118,7 @@ function TuningDropZone({
   onStartFresh,
   isActive = true,
 }: TuningDropZoneProps & { isActive?: boolean }) {
+  const { t } = useLocale();
   const [isDragging, setIsDragging] = useState(false);
   const dragDepthRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -186,17 +188,23 @@ function TuningDropZone({
       if (!file) return;
 
       if (!isTuningFileName(file.name)) {
-        toast("Unsupported file type. Use .ymt or .ymt.pso.xml.", true);
+        toast(t("tuning.drop.unsupported"), true);
         return;
       }
 
       try {
         ingestPayload(await readBrowserTuningFile(file));
       } catch (error) {
-        toast(error instanceof Error ? error.message : "Could not read file", true);
+        const message =
+          error instanceof Error && error.message === "unsupported"
+            ? t("tuning.drop.unsupported")
+            : error instanceof Error
+              ? error.message
+              : t("common.toast.couldNotReadFile");
+        toast(message, true);
       }
     },
-    [ingestPayload, resetDrag],
+    [ingestPayload, resetDrag, t],
   );
 
   const handleInputChange = useCallback(
@@ -206,17 +214,23 @@ function TuningDropZone({
       if (!file) return;
 
       if (!isTuningFileName(file.name)) {
-        toast("Unsupported file type. Use .ymt or .ymt.pso.xml.", true);
+        toast(t("tuning.drop.unsupported"), true);
         return;
       }
 
       try {
         ingestPayload(await readBrowserTuningFile(file));
       } catch (error) {
-        toast(error instanceof Error ? error.message : "Could not read file", true);
+        const message =
+          error instanceof Error && error.message === "unsupported"
+            ? t("tuning.drop.unsupported")
+            : error instanceof Error
+              ? error.message
+              : t("common.toast.couldNotReadFile");
+        toast(message, true);
       }
     },
-    [ingestPayload],
+    [ingestPayload, t],
   );
 
   return (
@@ -230,7 +244,7 @@ function TuningDropZone({
       <div className="flex w-full max-w-4xl flex-col gap-4 sm:gap-5">
         <div
           role="region"
-          aria-label="Drop doortuning file"
+          aria-label={t("tuning.drop.aria")}
           aria-dropeffect={isDragging ? "copy" : "none"}
           className={cn(
             "flex min-h-[16rem] flex-col items-center justify-center gap-4 rounded-xl border px-8 py-10 text-center transition-[border-color,border-style,background-color,box-shadow] duration-150 sm:min-h-[18rem] sm:gap-5 sm:px-12",
@@ -250,16 +264,16 @@ function TuningDropZone({
 
           <div className="space-y-1.5">
             <p className="m-0 text-[15px] text-bright sm:text-[16px]">
-              Drag and drop your Tuning file here
+              {t("tuning.drop.headline")}
             </p>
             <p className="m-0 text-[12px] text-muted-foreground sm:text-[13px]">
-              Supports .ymt and .ymt.pso.xml formats
+              {t("tuning.drop.formats")}
             </p>
           </div>
 
           <div className="flex w-full max-w-56 items-center gap-2.5 py-0.5">
             <span className="h-px flex-1 bg-line" />
-            <span className="text-[12px] text-faint">or</span>
+            <span className="text-[12px] text-faint">{t("common.or")}</span>
             <span className="h-px flex-1 bg-line" />
           </div>
 
@@ -271,8 +285,8 @@ function TuningDropZone({
             onClick={() => {
               void (async () => {
                 try {
-                  const file = await openTextFile("Open doortuning", [
-                    { title: "YMT / PSO XML", extensions: ["ymt", "xml"] },
+                  const file = await openTextFile(t("tuning.dialog.open"), [
+                    { title: t("tuning.dialog.filterYmt"), extensions: ["ymt", "xml"] },
                   ]);
                   if (file) onFile(file);
                   return;
@@ -283,7 +297,7 @@ function TuningDropZone({
               })();
             }}
           >
-            Browse Files
+            {t("common.browseFiles")}
           </Button>
 
           <input
@@ -297,15 +311,13 @@ function TuningDropZone({
 
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-line-soft bg-panel/30 px-8 py-8 text-center sm:px-12">
           <div className="space-y-1.5">
-            <p className="m-0 text-[15px] text-bright sm:text-[16px]">No tuning file yet?</p>
+            <p className="m-0 text-[15px] text-bright sm:text-[16px]">{t("tuning.fresh.headline")}</p>
             <p className="m-0 max-w-md text-[12px] leading-5 text-muted-foreground sm:text-[13px]">
-              Start from the bundled GTA5 vanilla{" "}
-              <span className="font-mono text-[12px] text-faint">doortuning.ymt</span>, then Export
-              your own copy.
+              {t("tuning.fresh.body")}
             </p>
           </div>
           <Button type="button" size="lg" onClick={onStartFresh}>
-            Start fresh
+            {t("tuning.fresh.cta")}
           </Button>
         </div>
       </div>
@@ -319,6 +331,7 @@ export const TuningView = memo(function TuningView(props: {
   isActive?: boolean;
 }) {
   const { onDirty, onFooter, isActive = true } = props;
+  const { t } = useLocale();
   const workspaceActive = isActive;
   const [path, setPath] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -356,16 +369,21 @@ export const TuningView = memo(function TuningView(props: {
       });
       return;
     }
-    const ext = fileName.toLowerCase().endsWith(".xml") ? "XML" : "YMT";
+    const ext = fileName.toLowerCase().endsWith(".xml")
+      ? t("status.format.xml")
+      : t("status.format.ymt");
     onFooter({
       file: { name: fileName, path: path || null },
       format: ext,
       counts: doc
-        ? `${doc.tunings.length} tunings - ${doc.maps.length} doors`
+        ? t("status.counts.tuningsDoors", {
+            tunings: doc.tunings.length,
+            doors: doc.maps.length,
+          })
         : null,
       lastExportAt,
     });
-  }, [path, fileName, doc, lastExportAt, onFooter]);
+  }, [path, fileName, doc, lastExportAt, onFooter, t]);
 
   useEffect(() => {
     if (!doc) {
@@ -374,13 +392,13 @@ export const TuningView = memo(function TuningView(props: {
     }
     setPreviewTuningSource({
       maps: doc.maps.map((m) => ({ model: m.model, tuning: m.tuning })),
-      tunings: doc.tunings.map((t) => ({
-        name: t.name,
-        rotationLimitAngle: t.fields.RotationLimitAngle,
-        stdDoorRotDir: t.fields.StdDoorRotDir,
-        autoOpenRate: t.fields.AutoOpenRate,
-        angularVelocityLimit: t.fields.TorqueAngularVelocityLimit,
-        closeRateTaper: t.fields.AutoOpenCloseRateTaper,
+      tunings: doc.tunings.map((entry) => ({
+        name: entry.name,
+        rotationLimitAngle: entry.fields.RotationLimitAngle,
+        stdDoorRotDir: entry.fields.StdDoorRotDir,
+        autoOpenRate: entry.fields.AutoOpenRate,
+        angularVelocityLimit: entry.fields.TorqueAngularVelocityLimit,
+        closeRateTaper: entry.fields.AutoOpenCloseRateTaper,
       })),
     });
   }, [doc]);
@@ -390,23 +408,26 @@ export const TuningView = memo(function TuningView(props: {
     setDoc(parseTuning(next));
   };
 
-  const loadFile = useCallback((file: NativeFile) => {
-    try {
-      const parsed = parseTuning(file.text);
-      setPath(file.path || null);
-      setFileName(file.name);
-      setXml(file.text);
-      setBaselineXml(file.text);
-      setDoc(parsed);
-      setActive("tuning");
-      setSelected(0);
-      setSelectedDoor(0);
-      setFormDirty(false);
-      toast(`Opened ${file.name}`, "info");
-    } catch (error) {
-      toast(error instanceof Error ? error.message : "Could not import YMT", true);
-    }
-  }, []);
+  const loadFile = useCallback(
+    (file: NativeFile) => {
+      try {
+        const parsed = parseTuning(file.text);
+        setPath(file.path || null);
+        setFileName(file.name);
+        setXml(file.text);
+        setBaselineXml(file.text);
+        setDoc(parsed);
+        setActive("tuning");
+        setSelected(0);
+        setSelectedDoor(0);
+        setFormDirty(false);
+        toast(t("common.toast.opened", { name: file.name }), "info");
+      } catch (error) {
+        toast(error instanceof Error ? error.message : t("tuning.toast.importFailed"), true);
+      }
+    },
+    [t],
+  );
 
   const startFresh = useCallback(() => {
     try {
@@ -420,20 +441,20 @@ export const TuningView = memo(function TuningView(props: {
       setSelected(0);
       setSelectedDoor(0);
       setFormDirty(false);
-      toast("Loaded vanilla GTA5 doortuning - Export when you want a file on disk.", "info");
+      toast(t("tuning.toast.vanillaLoaded"), "info");
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Could not load vanilla doortuning", true);
+      toast(error instanceof Error ? error.message : t("tuning.toast.vanillaFailed"), true);
     }
-  }, []);
+  }, [t]);
 
   useNativeDrop(loadFile, undefined, workspaceActive);
 
   const closeFile = () => {
     setConfirm({
-      title: "Unload file",
+      title: t("common.dialog.unload.title"),
       body: hasUnsaved
-        ? "You still have pending edits. Unload anyway and lose them?"
-        : "Unload this doortuning file from the editor.",
+        ? t("tuning.confirm.unload.bodyDirty")
+        : t("tuning.confirm.unload.bodyClean"),
       run: () => {
         setXml(null);
         setBaselineXml(null);
@@ -471,7 +492,7 @@ export const TuningView = memo(function TuningView(props: {
 
   const blockIfFormDirty = (): boolean => {
     if (!formDirty && !editorRef.current?.isDirty()) return false;
-    toast("Save or discard edits before switching.", true);
+    toast(t("common.toast.saveOrDiscardBeforeSwitch"), true);
     return true;
   };
 
@@ -479,10 +500,10 @@ export const TuningView = memo(function TuningView(props: {
     const nextXml = flushEditor();
     if (!nextXml) return;
     setBaselineXml(nextXml);
-    toast("Session saved - Export to write a file.", "save");
+    toast(t("common.toast.sessionSavedExport"), "save");
   };
 
-  const exportToPath = async (targetPath: string, label: string) => {
+  const exportToPath = async (targetPath: string) => {
     const nextXml = flushEditor();
     if (!nextXml) return;
     setSaving(true);
@@ -491,9 +512,9 @@ export const TuningView = memo(function TuningView(props: {
       await saveTextFile(targetPath, nextXml);
       setBaselineXml(nextXml);
       setLastExportAt(Date.now());
-      toast(backup ? `${label} (backup created)` : label, "export");
+      toast(backup ? t("tuning.toast.replacedBackup") : t("tuning.toast.replaced"), "export");
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Export failed", true);
+      toast(error instanceof Error ? error.message : t("common.toast.exportFailed"), true);
     } finally {
       setSaving(false);
     }
@@ -505,19 +526,19 @@ export const TuningView = memo(function TuningView(props: {
     setSaving(true);
     try {
       const saved = await saveTextFileAs(
-        "Export doortuning.ymt",
+        t("tuning.dialog.export"),
         fileName || "doortuning.ymt",
         nextXml,
-        [{ title: "YMT", extensions: ["ymt", "xml"] }],
+        [{ title: t("tuning.dialog.filterYmtOnly"), extensions: ["ymt", "xml"] }],
       );
       if (!saved) return;
       setBaselineXml(nextXml);
       setPath(saved.path || null);
       setFileName(saved.name);
       setLastExportAt(Date.now());
-      toast(`Exported ${saved.name}`, "export");
+      toast(t("common.toast.exported", { name: saved.name }), "export");
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Export failed", true);
+      toast(error instanceof Error ? error.message : t("common.toast.exportFailed"), true);
     } finally {
       setSaving(false);
     }
@@ -528,9 +549,7 @@ export const TuningView = memo(function TuningView(props: {
     const nextXml = flushEditor();
     if (!nextXml) return;
 
-    const parent = await pickDirectory(
-      "Pick resources folder (e.g. resources\\[main]) - resource folder will be created inside",
-    );
+    const parent = await pickDirectory(t("tuning.dialog.pickResources"));
     if (!parent) return;
 
     const dest = joinPath(parent, resourceName);
@@ -543,12 +562,9 @@ export const TuningView = memo(function TuningView(props: {
       setPath(joinPath(dest, "doortuning.ymt"));
       setFileName("doortuning.ymt");
       setLastExportAt(Date.now());
-      toast(
-        `Exported resource "${resourceName}" → resources:/${resourceName}/doortuning`,
-        "export",
-      );
+      toast(t("tuning.toast.resourceExported", { name: resourceName }), "export");
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Resource export failed", true);
+      toast(error instanceof Error ? error.message : t("tuning.toast.resourceFailed"), true);
     } finally {
       setSaving(false);
     }
@@ -556,14 +572,14 @@ export const TuningView = memo(function TuningView(props: {
 
   const replaceImport = async () => {
     if (!path) {
-      toast("No imported file to replace - use Export instead.", true);
+      toast(t("common.toast.noImportToReplace"), true);
       return;
     }
     setConfirm({
-      title: "Replace imported file",
-      body: `Overwrite the imported file on disk?\n${path}`,
+      title: t("common.dialog.replaceImported.title"),
+      body: t("tuning.confirm.replace.body", { path }),
       run: () => {
-        void exportToPath(path, "Imported file replaced");
+        void exportToPath(path);
       },
     });
   };
@@ -601,7 +617,7 @@ export const TuningView = memo(function TuningView(props: {
 
   return (
     <WorkspaceShell
-      title="Door Tuning Editor"
+      title={t("tuning.title")}
       subtitle={fileName || undefined}
       status={hasUnsaved ? "unsaved" : null}
       actions={
@@ -616,7 +632,7 @@ export const TuningView = memo(function TuningView(props: {
                   disabled={saving}
                 >
                   <Upload className="size-3.5" strokeWidth={1.75} />
-                  Export
+                  {t("tuning.export")}
                   <ChevronDown className="size-3.5 opacity-70" strokeWidth={1.75} />
                 </Button>
               </DropdownMenuTrigger>
@@ -626,14 +642,14 @@ export const TuningView = memo(function TuningView(props: {
                   onClick={() => void exportAs()}
                 >
                   <Upload className="size-3.5" strokeWidth={1.75} />
-                  doortuning.ymt only
+                  {t("tuning.export.ymtOnly")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="gap-2"
                   onClick={() => setPrompt({ kind: "exportResource" })}
                 >
                   <Package className="size-3.5" strokeWidth={1.75} />
-                  FiveM resource bundle
+                  {t("tuning.export.fivemBundle")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -648,7 +664,7 @@ export const TuningView = memo(function TuningView(props: {
                 onClick={() => void replaceImport()}
               >
                 <Replace className="size-3.5" strokeWidth={1.75} />
-                Replace import
+                {t("common.replaceImport")}
               </Button>
             ) : null}
             <Button
@@ -656,11 +672,11 @@ export const TuningView = memo(function TuningView(props: {
               variant="outline"
               size="sm"
               className="gap-1.5"
-              title="Unload this file"
+              title={t("common.unloadTitle")}
               onClick={closeFile}
             >
               <FileMinus className="size-3.5" strokeWidth={1.75} />
-              Unload
+              {t("common.unload")}
             </Button>
           </>
         ) : undefined
@@ -675,7 +691,7 @@ export const TuningView = memo(function TuningView(props: {
           <div className="grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(300px,400px)_minmax(0,1fr)] divide-x divide-line-soft xl:grid-cols-[minmax(320px,440px)_minmax(0,1fr)]">
             <div className="flex min-h-0 flex-col bg-sidebar/80">
               <div className="ide-panel-head shrink-0">
-                Tunings
+                {t("tuning.panel.tunings")}
                 <span className="flex items-center gap-2 font-normal normal-case tracking-normal">
                   <Badge variant="secondary" className="h-8 px-2 font-mono text-[11px] tabular-nums">
                     {doc.tunings.length}
@@ -686,13 +702,13 @@ export const TuningView = memo(function TuningView(props: {
                     onClick={() => setPrompt({ kind: "addTune" })}
                   >
                     <Plus className="size-3.5 shrink-0" strokeWidth={2.5} aria-hidden />
-                    <span className="leading-none">Add tuning</span>
+                    <span className="leading-none">{t("tuning.addTuning")}</span>
                   </Button>
                 </span>
               </div>
               <div className="shrink-0 border-b border-line-soft px-2.5 py-3">
                 <SearchField
-                  placeholder="Search tunings"
+                  placeholder={t("tuning.searchTunings")}
                   value={tuneSearch}
                   onChange={setTuneSearch}
                 />
@@ -718,7 +734,9 @@ export const TuningView = memo(function TuningView(props: {
                         >
                           <span className="w-full truncate">{item.name}</span>
                           <small>
-                            {linked} door{linked === 1 ? "" : "s"}
+                            {linked === 1
+                              ? t("tuning.linkedDoors", { count: linked })
+                              : t("tuning.linkedDoorsOther", { count: linked })}
                           </small>
                         </button>
                         <div className="ide-row-btns">
@@ -726,8 +744,8 @@ export const TuningView = memo(function TuningView(props: {
                             type="button"
                             size="icon-sm"
                             variant="ghost"
-                            title={`Duplicate ${item.name}`}
-                            aria-label={`Duplicate ${item.name}`}
+                            title={t("tuning.duplicate", { name: item.name })}
+                            aria-label={t("tuning.duplicate", { name: item.name })}
                             onClick={(event) => {
                               event.stopPropagation();
                               setPrompt({ kind: "dupTune", name: item.name });
@@ -739,17 +757,20 @@ export const TuningView = memo(function TuningView(props: {
                             type="button"
                             size="icon-sm"
                             variant="ghost"
-                            title={`Delete ${item.name}`}
-                            aria-label={`Delete ${item.name}`}
+                            title={t("tuning.delete", { name: item.name })}
+                            aria-label={t("tuning.delete", { name: item.name })}
                             className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
                             onClick={(event) => {
                               event.stopPropagation();
                               const links = doc.maps.filter((map) => map.tuning === item.name);
                               setConfirm({
-                                title: "Remove tuning",
+                                title: t("tuning.confirm.removeTuning.title"),
                                 body: links.length
-                                  ? `Remove ${item.name} and its ${links.length} linked door mapping(s)?`
-                                  : `Remove tuning ${item.name}?`,
+                                  ? t("tuning.confirm.removeTuning.withLinks", {
+                                      name: item.name,
+                                      count: links.length,
+                                    })
+                                  : t("tuning.confirm.removeTuning.alone", { name: item.name }),
                                 run: () => {
                                   const base = flushEditor();
                                   if (!base) return;
@@ -763,7 +784,7 @@ export const TuningView = memo(function TuningView(props: {
                                   setSelected((current) =>
                                     current >= index ? Math.max(0, current - 1) : current,
                                   );
-                                  toast("Tuning removed");
+                                  toast(t("tuning.toast.tuningRemoved"));
                                 },
                               });
                             }}
@@ -778,7 +799,7 @@ export const TuningView = memo(function TuningView(props: {
               </div>
 
               <div className="ide-panel-head shrink-0 border-t border-line-soft">
-                Doors
+                {t("tuning.panel.doors")}
                 <span className="flex items-center gap-2 font-normal normal-case tracking-normal">
                   <Badge variant="secondary" className="h-8 px-2 font-mono text-[11px] tabular-nums">
                     {doc.maps.length}
@@ -789,13 +810,13 @@ export const TuningView = memo(function TuningView(props: {
                     onClick={() => setPrompt({ kind: "addDoor" })}
                   >
                     <Plus className="size-3.5 shrink-0" strokeWidth={2.5} aria-hidden />
-                    <span className="leading-none">Add door</span>
+                    <span className="leading-none">{t("tuning.addDoor")}</span>
                   </Button>
                 </span>
               </div>
               <div className="flex shrink-0 flex-col gap-2.5 border-b border-line-soft px-2.5 py-3">
                 <SearchField
-                  placeholder="Search doors"
+                  placeholder={t("tuning.searchDoors")}
                   value={doorSearch}
                   onChange={setDoorSearch}
                 />
@@ -803,7 +824,7 @@ export const TuningView = memo(function TuningView(props: {
                   value={doorFilter}
                   onValueChange={setDoorFilter}
                   options={[
-                    { value: "all", label: "All tunings" },
+                    { value: "all", label: t("tuning.filter.allTunings") },
                     ...doc.tunings.map((item) => ({ value: item.name, label: item.name })),
                   ]}
                 />
@@ -851,7 +872,7 @@ export const TuningView = memo(function TuningView(props: {
                     if (blockIfFormDirty()) return;
                     const index = doc.tunings.findIndex((item) => item.name === name);
                     if (index < 0) {
-                      toast("That tuning is not in this file.", true);
+                      toast(t("tuning.toast.tuningMissing"), true);
                       return;
                     }
                     setSelected(index);
@@ -859,14 +880,14 @@ export const TuningView = memo(function TuningView(props: {
                   }}
                   onRemove={() =>
                     setConfirm({
-                      title: "Remove door",
-                      body: `Remove the door mapping for ${selectedMap.model}?`,
+                      title: t("tuning.confirm.removeDoor.title"),
+                      body: t("tuning.confirm.removeDoor.body", { model: selectedMap.model }),
                       run: () => {
                         const base = flushEditor();
                         if (!base) return;
                         applyXml(removeDoorMapping(base, selectedMap.model));
                         setSelectedDoor(0);
-                        toast("Door mapping removed");
+                        toast(t("tuning.toast.doorRemoved"));
                       },
                     })
                   }
@@ -883,10 +904,13 @@ export const TuningView = memo(function TuningView(props: {
                   onRemove={() => {
                     const links = doc.maps.filter((map) => map.tuning === selectedTune.name);
                     setConfirm({
-                      title: "Remove tuning",
+                      title: t("tuning.confirm.removeTuning.title"),
                       body: links.length
-                        ? `Remove ${selectedTune.name} and its ${links.length} linked door mapping(s)?`
-                        : `Remove tuning ${selectedTune.name}?`,
+                        ? t("tuning.confirm.removeTuning.withLinks", {
+                            name: selectedTune.name,
+                            count: links.length,
+                          })
+                        : t("tuning.confirm.removeTuning.alone", { name: selectedTune.name }),
                       run: () => {
                         const base = flushEditor();
                         if (!base) return;
@@ -898,14 +922,14 @@ export const TuningView = memo(function TuningView(props: {
                           ),
                         );
                         setSelected(0);
-                        toast("Tuning removed");
+                        toast(t("tuning.toast.tuningRemoved"));
                       },
                     });
                   }}
                 />
               ) : (
                 <div className="grid h-full place-items-center px-6 text-center text-[13px] text-muted-foreground">
-                  Select a tuning or door from the list.
+                  {t("tuning.emptySelect")}
                 </div>
               )}
             </div>
@@ -916,7 +940,7 @@ export const TuningView = memo(function TuningView(props: {
             saving={saving}
             onReset={resetChanges}
             onSave={saveSession}
-            description="Save keeps edits in this session only. Export writes a file to disk."
+            description={t("tuning.unsavedBar.description")}
           />
         </div>
       )}
@@ -925,21 +949,21 @@ export const TuningView = memo(function TuningView(props: {
         open={!!prompt}
         title={
           prompt?.kind === "addTune"
-            ? "New tuning"
+            ? t("tuning.prompt.addTune")
             : prompt?.kind === "dupTune"
-              ? `Duplicate ${prompt.name}`
+              ? t("tuning.prompt.dupTune", { name: prompt.name })
               : prompt?.kind === "renameTune"
-                ? "Rename tuning"
+                ? t("tuning.prompt.renameTune")
                 : prompt?.kind === "exportResource"
-                  ? "FiveM resource name"
-                  : "New door mapping"
+                  ? t("tuning.prompt.exportResource")
+                  : t("tuning.prompt.addDoor")
         }
         label={
           prompt?.kind === "addDoor"
-            ? "Door model name"
+            ? t("tuning.prompt.label.doorModel")
             : prompt?.kind === "exportResource"
-              ? "Resource folder name (used in gta5.meta)"
-              : "Tuning name"
+              ? t("tuning.prompt.label.resourceFolder")
+              : t("tuning.prompt.label.tuningName")
         }
         initial={
           prompt?.kind === "renameTune"
@@ -961,32 +985,32 @@ export const TuningView = memo(function TuningView(props: {
           const name = value.trim();
           try {
             if (prompt?.kind === "addTune") {
-              if (!uniqueTune(name)) return toast("A unique tuning name is required.", true);
+              if (!uniqueTune(name)) return toast(t("tuning.toast.uniqueNameRequired"), true);
               const next = appendTuning(base, newTuningItem(name));
               applyXml(next);
               setSelected(parseTuning(next).tunings.findIndex((item) => item.name === name));
               setActive("tuning");
             } else if (prompt?.kind === "dupTune") {
-              if (!uniqueTune(name)) return toast("That tuning name already exists.", true);
+              if (!uniqueTune(name)) return toast(t("tuning.toast.nameExists"), true);
               const next = duplicateTuning(base, prompt.name, name);
               applyXml(next);
               setSelected(parseTuning(next).tunings.findIndex((item) => item.name === name));
               setActive("tuning");
             } else if (prompt?.kind === "renameTune") {
               if (name === prompt.name) return setPrompt(null);
-              if (!uniqueTune(name)) return toast("That tuning name already exists.", true);
+              if (!uniqueTune(name)) return toast(t("tuning.toast.nameExists"), true);
               applyXml(renameTuning(base, prompt.name, name));
-              toast("Tuning renamed");
+              toast(t("tuning.toast.tuningRenamed"));
             } else if (prompt?.kind === "addDoor") {
-              if (!name) return toast("Model name is required.", true);
+              if (!name) return toast(t("tuning.toast.modelRequired"), true);
               const tuning = doc.tunings[0]?.name;
-              if (!tuning) return toast("Add a tuning first.", true);
+              if (!tuning) return toast(t("tuning.toast.addTuningFirst"), true);
               applyXml(setDoorMapping(base, name, tuning));
               setActive("door");
             }
             setPrompt(null);
           } catch (error) {
-            toast(error instanceof Error ? error.message : "Update failed", true);
+            toast(error instanceof Error ? error.message : t("common.toast.updateFailed"), true);
           }
         }}
       />
@@ -1025,6 +1049,7 @@ const DoorDetail = forwardRef<
     onRemove: () => void;
   }
 >(function DoorDetail({ map, maps, tunings, xml, onDirtyChange, onOpenTuning, onRemove }, ref) {
+  const { t } = useLocale();
   const [model, setModel] = useState(map.model);
   const [tuning, setTuning] = useState(map.tuning);
 
@@ -1056,7 +1081,7 @@ const DoorDetail = forwardRef<
         if (!dirty) return null;
         const nextModel = model.trim();
         if (!nextModel) {
-          toast("Model name is required.", true);
+          toast(t("tuning.toast.modelRequired"), true);
           return null;
         }
         let next = setDoorMapping(xml, map.model, tuning);
@@ -1064,7 +1089,7 @@ const DoorDetail = forwardRef<
         return next;
       },
     }),
-    [dirty, map.model, model, tuning, xml],
+    [dirty, map.model, model, t, tuning, xml],
   );
 
   return (
@@ -1077,14 +1102,12 @@ const DoorDetail = forwardRef<
             </div>
             {dirty ? (
               <span className="shrink-0 rounded-md bg-warning/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide text-warning">
-                Unsaved
+                {t("common.unsavedBadge")}
               </span>
             ) : null}
           </div>
-          <div className="mt-0.5 flex items-center gap-1 text-[11px] text-faint">
-            Door
-            <ArrowRight className="size-3 shrink-0" strokeWidth={2} aria-hidden />
-            tuning mapping
+          <div className="mt-0.5 text-[11px] text-faint">
+            {t("tuning.door.subtitle")}
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -1093,14 +1116,18 @@ const DoorDetail = forwardRef<
             variant="outline"
             size="sm"
             disabled={!tuningExists}
-            title={tuningExists ? `Open ${tuning}` : "Tuning not found"}
+            title={
+              tuningExists
+                ? t("tuning.door.openTuningTitle", { name: tuning })
+                : t("tuning.door.tuningNotFound")
+            }
             onClick={() => onOpenTuning(tuning)}
           >
             <ExternalLink className="size-3.5" strokeWidth={1.75} aria-hidden />
-            Open tuning
+            {t("tuning.door.openTuning")}
           </Button>
           <Button variant="destructive" size="sm" onClick={onRemove}>
-            Remove
+            {t("common.remove")}
           </Button>
         </div>
       </div>
@@ -1109,11 +1136,13 @@ const DoorDetail = forwardRef<
         <section className="w-full rounded-lg border border-line-soft bg-panel/40 p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-[13px] font-medium tracking-tight text-muted-foreground">
-              Mapping
+              {t("tuning.door.mapping")}
             </h3>
             <div className="flex flex-wrap items-center gap-2 text-[11px] text-faint">
               <span className="rounded-md bg-secondary px-2 py-1 font-mono text-[11px] text-secondary-foreground">
-                {shared} door{shared === 1 ? "" : "s"} on this tuning
+                {shared === 1
+                  ? t("tuning.door.sharedOnTuning", { count: shared })
+                  : t("tuning.door.sharedOnTuningOther", { count: shared })}
               </span>
               {tuning !== map.tuning ? (
                 <span className="inline-flex min-w-0 max-w-full items-center gap-1 truncate font-mono">
@@ -1127,7 +1156,9 @@ const DoorDetail = forwardRef<
 
           <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)]">
             <div className="min-w-0">
-              <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">Model name</Label>
+              <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">
+                {t("tuning.door.modelName")}
+              </Label>
               <Input
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
@@ -1140,7 +1171,9 @@ const DoorDetail = forwardRef<
             </div>
 
             <div className="min-w-0">
-              <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">Linked tuning</Label>
+              <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">
+                {t("tuning.door.linkedTuning")}
+              </Label>
               <SimpleSelect
                 value={tuning}
                 onValueChange={setTuning}
@@ -1166,6 +1199,7 @@ const TuneDetail = forwardRef<
     onRemove: () => void;
   }
 >(function TuneDetail({ entry, xml, linked, onDirtyChange, onRename, onRemove }, ref) {
+  const { t } = useLocale();
   const [fields, setFields] = useState(entry.fields);
   const [box, setBox] = useState(entry.box);
 
@@ -1204,15 +1238,17 @@ const TuneDetail = forwardRef<
         <div className="min-w-0">
           <div className="truncate text-[14px] font-semibold tracking-tight text-bright">{entry.name}</div>
           <div className="text-[11px] text-faint">
-            Shared by {linked} door{linked === 1 ? "" : "s"}
+            {linked === 1
+              ? t("tuning.detail.sharedBy", { count: linked })
+              : t("tuning.detail.sharedByOther", { count: linked })}
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
           <Button variant="outline" size="sm" onClick={onRename}>
-            Rename
+            {t("common.rename")}
           </Button>
           <Button variant="destructive" size="sm" onClick={onRemove}>
-            Remove
+            {t("common.remove")}
           </Button>
         </div>
       </div>

@@ -12,7 +12,9 @@ import { toast } from "@/lib/toast";
 import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { VirtualList } from "@/components/VirtualList";
 import { useNativeDrop } from "@/hooks/useNativeDrop";
+import { useLocale } from "@/hooks/useLocale";
 import { useWorkspaceActions } from "@/lib/workspaceActions";
+import type { MessageKey } from "@/domain/i18n";
 import {
   audioXml,
   matchPresetIndex,
@@ -96,11 +98,15 @@ function Field({
   );
 }
 
-function presetLabel(catalog: AudioPreset[], preset: string): string {
-  if (!preset) return "unassigned";
-  if (preset === "custom") return "Custom";
+function presetLabel(
+  catalog: AudioPreset[],
+  preset: string,
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string,
+): string {
+  if (!preset) return t("audio.preset.unassigned");
+  if (preset === "custom") return t("audio.preset.custom");
   const item = catalog[+preset];
-  return item?.name ?? "preset";
+  return item?.name ?? t("audio.preset.fallback");
 }
 
 function rematchAssignments(assignments: AudioAssignment[], catalog: AudioPreset[]): AudioAssignment[] {
@@ -131,6 +137,7 @@ export const AudioView = memo(function AudioView({
   onAssignments: (assignments: AudioAssignment[]) => void;
   onCatalog: (catalog: AudioPreset[]) => void;
 }) {
+  const { t } = useLocale();
   const workspaceActive = isActive;
   const [selected, setSelected] = useState(0);
   const [search, setSearch] = useState("");
@@ -153,22 +160,22 @@ export const AudioView = memo(function AudioView({
         ? { name: fileNameFromPath(importPath), path: importPath }
         : null,
       format: "REL",
-      counts: `${doors.length} doors`,
+      counts: t("status.counts.doors", { count: doors.length }),
       lastExportAt,
     });
-  }, [importPath, doors.length, lastExportAt, onFooter]);
+  }, [importPath, doors.length, lastExportAt, onFooter, t]);
 
   useEffect(() => {
     if (doors.length > 0) return;
     const id = newDoorId();
     const blank = blankAssignment(id);
-    const nextDoors = [{ id, label: "New door" }];
+    const nextDoors = [{ id, label: t("audio.newDoor") }];
     onDoors(nextDoors);
     setSelected(0);
     setDraft(blank);
     setBaseline(blank);
     setSession(cloneSession(nextDoors, []));
-  }, [doors.length, onDoors]);
+  }, [doors.length, onDoors, t]);
 
   const door = doors[Math.min(selected, Math.max(doors.length - 1, 0))];
   const isCustom = draft.preset === "custom";
@@ -195,7 +202,7 @@ export const AudioView = memo(function AudioView({
     () =>
       doors.filter((item) => {
         const assigned = assignments.find((row) => row.id === item.id);
-        const name = (assigned?.name || "new door").toLowerCase();
+        const name = (assigned?.name || t("audio.newDoor")).toLowerCase();
         return (
           (!search || name.includes(search.toLowerCase())) &&
           (filter === "all" ||
@@ -203,7 +210,7 @@ export const AudioView = memo(function AudioView({
             (filter === "unassigned" && !assigned))
         );
       }),
-    [doors, assignments, search, filter],
+    [doors, assignments, search, filter, t],
   );
 
   const commitDraft = (): AudioAssignment[] | null => {
@@ -218,7 +225,7 @@ export const AudioView = memo(function AudioView({
       maxOcclusion: draft.maxOcclusion.trim(),
     };
     if (saved.name === "d_" || !saved.sounds || !saved.tuningParams) {
-      toast("A door name, Sounds and TuningParams are required.", true);
+      toast(t("audio.toast.requiredFields"), true);
       return null;
     }
     const next = assignments.filter((item) => item.id !== door.id).concat(saved);
@@ -262,21 +269,21 @@ export const AudioView = memo(function AudioView({
         setSession(cloneSession(nextDoors, nextAssignments));
         toast(
           entries.length === 1
-            ? "Imported 1 door from DAT151"
-            : `Imported ${entries.length} doors from DAT151`,
+            ? t("audio.toast.importedOne")
+            : t("audio.toast.importedMany", { count: entries.length }),
           "info",
         );
       } catch (error) {
-        toast(error instanceof Error ? error.message : "Could not import DAT151", true);
+        toast(error instanceof Error ? error.message : t("audio.toast.importFailed"), true);
       }
     },
-    [catalog, onDoors, onAssignments],
+    [catalog, onDoors, onAssignments, t],
   );
 
   const addDoor = () => {
     const id = newDoorId();
     const blank = blankAssignment(id);
-    onDoors([...doors, { id, label: "New door" }]);
+    onDoors([...doors, { id, label: t("audio.newDoor") }]);
     setSelected(doors.length);
     setDraft(blank);
     setBaseline(blank);
@@ -285,7 +292,7 @@ export const AudioView = memo(function AudioView({
 
   const selectDoor = (index: number) => {
     if (formDirty) {
-      toast("Save or discard edits before switching doors.", true);
+      toast(t("audio.toast.saveBeforeSwitch"), true);
       return;
     }
     setSelected(index);
@@ -306,14 +313,14 @@ export const AudioView = memo(function AudioView({
     setDraft(current);
     setBaseline(current);
     setCustomName("");
-    toast("Discarded session changes");
+    toast(t("common.toast.discardedSession"));
   };
 
   const saveSession = () => {
     const nextAssignments = commitDraft();
     if (!nextAssignments) return;
     setSession(cloneSession(doors, nextAssignments));
-    toast("Session saved - Export to write a file.", "save");
+    toast(t("common.toast.sessionSavedExport"), "save");
   };
 
   const buildExportXml = (rows: AudioAssignment[]) =>
@@ -330,38 +337,38 @@ export const AudioView = memo(function AudioView({
     const nextAssignments = commitDraft();
     if (!nextAssignments) return;
     if (nextAssignments.length === 0) {
-      toast("Save at least one door before exporting.", true);
+      toast(t("audio.toast.saveBeforeExport"), true);
       return;
     }
     if (nextAssignments.length !== doors.length) {
-      toast("Save audio for every added door first.", true);
+      toast(t("audio.toast.saveEveryDoor"), true);
       return;
     }
     try {
       const saved = await saveTextFileAs(
-        "Export DAT151 REL",
+        t("audio.dialog.export"),
         "game.dat151.rel.xml",
         buildExportXml(nextAssignments),
-        [{ title: "REL XML", extensions: ["xml"] }],
+        [{ title: t("audio.dialog.filterRel"), extensions: ["xml"] }],
       );
       if (!saved) return;
       setSession(cloneSession(doors, nextAssignments));
       setLastExportAt(Date.now());
-      toast(`Exported ${saved.name}`, "export");
+      toast(t("common.toast.exported", { name: saved.name }), "export");
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Export failed", true);
+      toast(error instanceof Error ? error.message : t("common.toast.exportFailed"), true);
     }
   };
 
   const replaceImport = async () => {
     if (!importPath) {
-      toast("No imported file to replace - use Export instead.", true);
+      toast(t("common.toast.noImportToReplace"), true);
       return;
     }
     const nextAssignments = commitDraft();
     if (!nextAssignments) return;
     if (nextAssignments.length === 0 || nextAssignments.length !== doors.length) {
-      toast("Save audio for every added door first.", true);
+      toast(t("audio.toast.saveEveryDoor"), true);
       return;
     }
     try {
@@ -370,23 +377,26 @@ export const AudioView = memo(function AudioView({
       setSession(cloneSession(doors, nextAssignments));
       setConfirmReplace(false);
       setLastExportAt(Date.now());
-      toast(backup ? "Imported file replaced (backup created)" : "Imported file replaced", "export");
+      toast(
+        backup ? t("common.toast.importedReplacedBackup") : t("common.toast.importedReplaced"),
+        "export",
+      );
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Replace failed", true);
+      toast(error instanceof Error ? error.message : t("common.toast.replaceFailed"), true);
     }
   };
 
   const saveCustomToCatalog = () => {
     const name = customName.trim();
     if (!name) {
-      toast("Name this custom preset first.", true);
+      toast(t("audio.toast.nameCustomFirst"), true);
       return;
     }
     const sounds = draft.sounds.trim();
     const tuningParams = draft.tuningParams.trim();
     const maxOcclusion = draft.maxOcclusion.trim() || "0.7";
     if (!sounds || !tuningParams) {
-      toast("Sounds and TuningParams are required.", true);
+      toast(t("audio.toast.soundsTuningRequired"), true);
       return;
     }
 
@@ -404,11 +414,11 @@ export const AudioView = memo(function AudioView({
     if (existing >= 0) {
       nextCatalog = catalog.map((item, index) => (index === existing ? nextPreset : item));
       presetIndex = existing;
-      toast(`Updated preset "${name}"`);
+      toast(t("audio.toast.presetUpdated", { name }));
     } else {
       nextCatalog = [...catalog, nextPreset];
       presetIndex = catalog.length;
-      toast(`Added preset "${name}"`);
+      toast(t("audio.toast.presetAdded", { name }));
     }
 
     onCatalog(nextCatalog);
@@ -444,7 +454,7 @@ export const AudioView = memo(function AudioView({
       }
     }
     setPage("doors");
-    toast(`${next.length} presets applied`);
+    toast(t("audio.toast.presetsApplied", { count: next.length }));
   };
 
   const loadDropped = (file: NativeFile) => {
@@ -453,7 +463,7 @@ export const AudioView = memo(function AudioView({
       try {
         applyCatalog(parseAudioCatalog(file.text));
       } catch (error) {
-        toast(error instanceof Error ? error.message : "Invalid presets JSON", true);
+        toast(error instanceof Error ? error.message : t("audio.toast.invalidPresetsJson"), true);
       }
       return;
     }
@@ -461,7 +471,7 @@ export const AudioView = memo(function AudioView({
       loadDat151(file);
       return;
     }
-    toast("Drop a DAT151 REL (.xml) or presets (.json).", true);
+    toast(t("audio.toast.dropHint"), true);
   };
 
   useNativeDrop(loadDropped, undefined, workspaceActive);
@@ -478,15 +488,15 @@ export const AudioView = memo(function AudioView({
       if (current === index) return Math.min(index, nextDoors.length - 1);
       return current;
     });
-    toast("Door removed");
+    toast(t("audio.toast.doorRemoved"));
   };
 
-  const displayName = draft.name.replace(/^d_/, "") || "New door";
+  const displayName = draft.name.replace(/^d_/, "") || t("audio.newDoor");
   const doorNameInput = draft.name.replace(/^d_/, "");
 
   const openPresetsPage = () => {
     if (formDirty) {
-      toast("Save or discard door edits before editing presets.", true);
+      toast(t("audio.toast.saveBeforePresets"), true);
       return;
     }
     setPage("presets");
@@ -499,7 +509,7 @@ export const AudioView = memo(function AudioView({
 
   return (
     <WorkspaceShell
-      title={page === "presets" ? "Preset catalog" : "Door Audio Editor"}
+      title={page === "presets" ? t("audio.presetsTitle") : t("audio.title")}
       subtitle={
         page === "presets"
           ? undefined
@@ -517,14 +527,14 @@ export const AudioView = memo(function AudioView({
               size="sm"
               className="gap-1.5"
               onClick={async () => {
-                const file = await openTextFile("Import DAT151 REL", [
-                  { title: "REL XML", extensions: ["xml"] },
+                const file = await openTextFile(t("audio.dialog.import"), [
+                  { title: t("audio.dialog.filterRel"), extensions: ["xml"] },
                 ]);
                 if (file) loadDat151(file);
               }}
             >
               <Download className="size-3.5" strokeWidth={1.75} />
-              Import REL
+              {t("audio.importRel")}
             </Button>
             <Button
               type="button"
@@ -533,7 +543,7 @@ export const AudioView = memo(function AudioView({
               onClick={() => void exportRel()}
             >
               <Upload className="size-3.5" strokeWidth={1.75} />
-              Export REL
+              {t("audio.exportRel")}
             </Button>
             {importPath ? (
               <Button
@@ -545,7 +555,7 @@ export const AudioView = memo(function AudioView({
                 onClick={() => setConfirmReplace(true)}
               >
                 <Replace className="size-3.5" strokeWidth={1.75} />
-                Replace import
+                {t("common.replaceImport")}
               </Button>
             ) : null}
             <Button
@@ -556,11 +566,11 @@ export const AudioView = memo(function AudioView({
               onClick={openPresetsPage}
             >
               <Code2 className="size-3.5" strokeWidth={1.75} />
-              Edit presets
+              {t("audio.editPresets")}
             </Button>
             <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => setConfirmReset(true)}>
               <RotateCcw className="size-3.5" strokeWidth={1.75} />
-              Reset
+              {t("audio.reset")}
             </Button>
           </>
         )
@@ -577,7 +587,7 @@ export const AudioView = memo(function AudioView({
         <div className="grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(300px,400px)_minmax(0,1fr)] divide-x divide-line-soft xl:grid-cols-[minmax(320px,440px)_minmax(0,1fr)]">
           <div className="flex min-h-0 flex-col bg-sidebar/80">
             <div className="ide-panel-head shrink-0">
-              Doors
+              {t("audio.panel.doors")}
               <span className="flex items-center gap-2 font-normal normal-case tracking-normal">
                 <Badge variant="secondary" className="h-8 px-2 font-mono text-[11px] tabular-nums">
                   {shown.length}/{doors.length || 1}
@@ -588,19 +598,19 @@ export const AudioView = memo(function AudioView({
                   onClick={addDoor}
                 >
                   <Plus className="size-3.5 shrink-0" strokeWidth={2.5} aria-hidden />
-                  <span className="leading-none">Add door</span>
+                  <span className="leading-none">{t("audio.addDoor")}</span>
                 </Button>
               </span>
             </div>
             <div className="flex shrink-0 flex-col gap-2.5 border-b border-line-soft px-2.5 py-3">
-              <SearchField placeholder="Search doors" value={search} onChange={setSearch} />
+              <SearchField placeholder={t("audio.search")} value={search} onChange={setSearch} />
               <SimpleSelect
                 value={filter}
                 onValueChange={setFilter}
                 options={[
-                  { value: "all", label: "All doors" },
-                  { value: "assigned", label: "Assigned" },
-                  { value: "unassigned", label: "Unassigned" },
+                  { value: "all", label: t("audio.filter.all") },
+                  { value: "assigned", label: t("audio.filter.assigned") },
+                  { value: "unassigned", label: t("audio.filter.unassigned") },
                 ]}
               />
             </div>
@@ -612,6 +622,7 @@ export const AudioView = memo(function AudioView({
                   const index = doors.indexOf(item);
                   const assigned = assignments.find((row) => row.id === item.id);
                   const active = index === selected;
+                  const deleteName = assigned?.name || t("audio.deleteDoorFallback");
                   return (
                     <div className={cn("ide-row-actions", active && "active")}>
                       <button
@@ -619,16 +630,16 @@ export const AudioView = memo(function AudioView({
                         className="ide-row-main"
                         onClick={() => selectDoor(index)}
                       >
-                        <span className="w-full truncate">{assigned?.name || "New door"}</span>
-                        <small>{presetLabel(catalog, assigned?.preset ?? "")}</small>
+                        <span className="w-full truncate">{assigned?.name || t("audio.newDoor")}</span>
+                        <small>{presetLabel(catalog, assigned?.preset ?? "", t)}</small>
                       </button>
                       <div className="ide-row-btns">
                         <Button
                           type="button"
                           size="icon-sm"
                           variant="ghost"
-                          title={`Delete ${assigned?.name || "door"}`}
-                          aria-label={`Delete ${assigned?.name || "door"}`}
+                          title={t("audio.deleteDoor", { name: deleteName })}
+                          aria-label={t("audio.deleteDoor", { name: deleteName })}
                           className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
                           onClick={(event) => {
                             event.stopPropagation();
@@ -654,26 +665,25 @@ export const AudioView = memo(function AudioView({
                   </div>
                   {formDirty ? (
                     <span className="shrink-0 rounded-md bg-warning/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide text-warning">
-                      Editing
+                      {t("common.editingBadge")}
                     </span>
                   ) : null}
                 </div>
                 <div className="mt-0.5 text-[11px] text-faint">
-                  Exports as <span className="font-mono text-muted-foreground">d_your_name</span> ·
-                  Save is session-only · Export writes REL
+                  {t("audio.detail.hint")}
                 </div>
               </div>
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-4 sm:p-5">
               <FormCard
-                title="Identity"
-                hint="Door audio name used in DAT151. The d_ prefix is added automatically on session save."
+                title={t("audio.section.identity")}
+                hint={t("audio.section.identityHint")}
               >
                 <div className="max-w-md">
-                  <Field label="Door name">
+                  <Field label={t("audio.field.doorName")}>
                     <Input
-                      placeholder="example_shop_front_door"
+                      placeholder={t("audio.placeholder.doorName")}
                       value={doorNameInput}
                       onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                       className="h-9 font-mono text-[12px]"
@@ -681,25 +691,25 @@ export const AudioView = memo(function AudioView({
                   </Field>
                   {doorNameInput.trim() ? (
                     <p className="mt-1.5 m-0 font-mono text-[11px] text-faint">
-                      REL name: {normalizeDoorName(draft.name) || "d_..."}
+                      {t("audio.relName", { name: normalizeDoorName(draft.name) || "d_..." })}
                     </p>
                   ) : null}
                 </div>
               </FormCard>
 
               <FormCard
-                title="Preset"
+                title={t("audio.section.preset")}
                 hint={
                   isCustom
-                    ? "Name this custom setup and save it into the catalog, or use Edit presets for bulk JSON."
-                    : "Pick a catalog preset, or Custom to edit Sounds / TuningParams."
+                    ? t("audio.section.presetHintCustom")
+                    : t("audio.section.presetHint")
                 }
               >
                 <div className="flex max-w-xl flex-col gap-3">
-                  <Field label="Audio preset">
+                  <Field label={t("audio.field.audioPreset")}>
                     <SimpleSelect
                       value={draft.preset || "none"}
-                      placeholder="Choose preset"
+                      placeholder={t("audio.choosePreset")}
                       onValueChange={(preset) => {
                         const next = preset === "none" ? "" : preset;
                         if (next !== "" && next !== "custom") {
@@ -718,21 +728,21 @@ export const AudioView = memo(function AudioView({
                         }
                       }}
                       options={[
-                        { value: "none", label: "Choose preset" },
+                        { value: "none", label: t("audio.choosePreset") },
                         ...catalog.map((item, index) => ({
                           value: String(index),
                           label: item.name,
                         })),
-                        { value: "custom", label: "Custom" },
+                        { value: "custom", label: t("audio.preset.custom") },
                       ]}
                     />
                   </Field>
 
                   {isCustom ? (
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                      <Field label="Custom preset name" className="min-w-0 flex-1">
+                      <Field label={t("audio.field.customPresetName")} className="min-w-0 flex-1">
                         <Input
-                          placeholder="My shop door"
+                          placeholder={t("audio.placeholder.customPreset")}
                           value={customName}
                           onChange={(e) => setCustomName(e.target.value)}
                           className="h-9 text-[12px]"
@@ -744,7 +754,7 @@ export const AudioView = memo(function AudioView({
                         className="h-9 shrink-0 gap-1.5"
                         onClick={saveCustomToCatalog}
                       >
-                        Save to presets
+                        {t("audio.saveToPresets")}
                       </Button>
                     </div>
                   ) : null}
@@ -752,15 +762,15 @@ export const AudioView = memo(function AudioView({
               </FormCard>
 
               <FormCard
-                title="Parameters"
+                title={t("audio.section.parameters")}
                 hint={
                   locked
-                    ? "Locked by preset - switch to Custom to edit."
-                    : "Editable values written into the audio XML."
+                    ? t("audio.section.parametersLocked")
+                    : t("audio.section.parametersEditable")
                 }
               >
                 <div className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
-                  <Field label="Sounds">
+                  <Field label={t("audio.field.sounds")}>
                     <Input
                       readOnly={locked}
                       value={draft.sounds}
@@ -768,7 +778,7 @@ export const AudioView = memo(function AudioView({
                       className={cn("h-9 font-mono text-[12px]", locked && "opacity-70")}
                     />
                   </Field>
-                  <Field label="TuningParams">
+                  <Field label={t("audio.field.tuningParams")}>
                     <Input
                       readOnly={locked}
                       value={draft.tuningParams}
@@ -776,7 +786,7 @@ export const AudioView = memo(function AudioView({
                       className={cn("h-9 font-mono text-[12px]", locked && "opacity-70")}
                     />
                   </Field>
-                  <Field label="MaxOcclusion" className="sm:col-span-1">
+                  <Field label={t("audio.field.maxOcclusion")} className="sm:col-span-1">
                     <Input
                       readOnly={locked}
                       value={draft.maxOcclusion}
@@ -797,15 +807,15 @@ export const AudioView = memo(function AudioView({
           open={sessionDirty}
           onReset={discardSession}
           onSave={saveSession}
-          description="Save keeps edits in this session only. Export writes a REL file to disk."
+          description={t("audio.unsavedBar.description")}
         />
       </div>
       )}
 
       <ConfirmDialog
         open={confirmReset}
-        title="Reset audio"
-        body="Clear doors and assignments. Preset catalog is left unchanged."
+        title={t("audio.confirm.reset.title")}
+        body={t("audio.confirm.reset.body")}
         danger
         onCancel={() => setConfirmReset(false)}
         onConfirm={() => {
@@ -819,8 +829,12 @@ export const AudioView = memo(function AudioView({
       />
       <ConfirmDialog
         open={confirmReplace}
-        title="Replace imported file"
-        body={importPath ? `Overwrite the imported REL on disk?\n${importPath}` : "No import path."}
+        title={t("common.dialog.replaceImported.title")}
+        body={
+          importPath
+            ? t("audio.confirm.replace.body", { path: importPath })
+            : t("audio.confirm.replace.noPath")
+        }
         danger
         onCancel={() => setConfirmReplace(false)}
         onConfirm={() => {
@@ -829,8 +843,12 @@ export const AudioView = memo(function AudioView({
       />
       <ConfirmDialog
         open={!!confirmDelete}
-        title="Remove door"
-        body={`Remove ${assignments.find((a) => a.id === confirmDelete?.id)?.name || "this door"} from the audio list?`}
+        title={t("audio.confirm.remove.title")}
+        body={t("audio.confirm.remove.body", {
+          name:
+            assignments.find((a) => a.id === confirmDelete?.id)?.name ||
+            t("audio.confirm.remove.thisDoor"),
+        })}
         danger
         onCancel={() => setConfirmDelete(null)}
         onConfirm={() => {

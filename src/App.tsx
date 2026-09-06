@@ -26,9 +26,12 @@ import {
   type WorkspaceId,
 } from "@/domain/constants";
 import { DEFAULT_AUDIO, catalogJson, parseAudioCatalogFile, type AudioAssignment, type AudioDoor, type AudioPreset } from "@/domain/audio";
+import type { MessageKey } from "@/domain/i18n";
 import { AppStatusBar } from "@/components/AppStatusBar";
 import { ConfirmDialog } from "@/components/Dialogs";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import { WindowTitlebar } from "@/components/WindowTitlebar";
+import { useLocale } from "@/hooks/useLocale";
 import { loadAudioCatalogText, saveAudioCatalogText } from "@/lib/files";
 import { toast } from "@/lib/toast";
 import { isEditableTarget, runWorkspaceAction } from "@/lib/workspaceActions";
@@ -113,12 +116,14 @@ const KeepAlivePane = memo(function KeepAlivePane({
 });
 
 function WorkspaceFallback() {
+  const { t } = useLocale();
   return (
-    <div className="grid flex-1 place-items-center text-[12px] text-faint">Loading...</div>
+    <div className="grid flex-1 place-items-center text-[12px] text-faint">{t("app.loading")}</div>
   );
 }
 
 export default function App() {
+  const { t } = useLocale();
   const [view, setView] = useState<WorkspaceId>("tuning");
   const [visited, setVisited] = useState(() => new Set<WorkspaceId>(["tuning"]));
   const [dirty, setDirty] = useState(EMPTY_DIRTY);
@@ -145,7 +150,7 @@ export default function App() {
         try {
           setCatalog(parseAudioCatalogFile(text));
         } catch {
-          toast("Saved audio presets were invalid - restoring defaults.", true);
+          toast(t("app.toast.audioPresetsInvalid"), true);
           setCatalog(DEFAULT_AUDIO);
           await saveAudioCatalogText(catalogJson(DEFAULT_AUDIO));
         }
@@ -155,16 +160,16 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const persistCatalog = useCallback((next: AudioPreset[]) => {
     catalogTouchedRef.current = true;
     setCatalog(next);
     if (!isTauri()) return;
     void saveAudioCatalogText(catalogJson(next)).catch((error) => {
-      toast(error instanceof Error ? error.message : "Could not save audio presets.", true);
+      toast(error instanceof Error ? error.message : t("app.toast.audioPresetsSaveFailed"), true);
     });
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     setVisited((prev) => {
@@ -298,17 +303,19 @@ export default function App() {
       <div className="flex min-h-0 flex-1">
         <aside className="flex w-[248px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar/90 backdrop-blur-sm">
           <div className="px-4 pb-1.5 pt-3.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-            Tools
+            {t("app.sidebar.tools")}
           </div>
-          <nav className="flex-1 space-y-1 overflow-auto px-2.5 pb-3" aria-label="Tools">
+          <nav className="flex-1 space-y-1 overflow-auto px-2.5 pb-3" aria-label={t("app.sidebar.toolsAria")}>
             {WORKSPACES.map((item) => {
               const Icon = ICONS[item.id];
               const isActive = view === item.id;
+              const shortKey = `workspace.${item.id}.short` as MessageKey;
+              const descKey = `workspace.${item.id}.description` as MessageKey;
               return (
                 <button
                   key={item.id}
                   type="button"
-                  title={item.description}
+                  title={t(descKey)}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[14px] transition-colors",
@@ -331,18 +338,21 @@ export default function App() {
                     )}
                     strokeWidth={1.75}
                   />
-                  <span className="min-w-0 flex-1 truncate font-medium">{item.short}</span>
+                  <span className="min-w-0 flex-1 truncate font-medium">{t(shortKey)}</span>
                   {dirty[item.id] ? (
                     <span
                       className="size-1.5 shrink-0 rounded-full bg-warning"
-                      title="Unsaved changes"
-                      aria-label="Unsaved changes"
+                      title={t("app.sidebar.unsaved")}
+                      aria-label={t("app.sidebar.unsaved")}
                     />
                   ) : null}
                 </button>
               );
             })}
           </nav>
+          <div className="shrink-0 border-t border-sidebar-border px-3 py-3">
+            <LanguageSelect />
+          </div>
         </aside>
 
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
@@ -407,8 +417,8 @@ export default function App() {
 
       <ConfirmDialog
         open={closeConfirm}
-        title="Unsaved changes"
-        body="One or more tools still have unsaved work. Close anyway and lose those edits?"
+        title={t("app.closeConfirm.title")}
+        body={t("app.closeConfirm.body")}
         danger
         onCancel={() => setCloseConfirm(false)}
         onConfirm={forceClose}

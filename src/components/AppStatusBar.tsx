@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { FolderOpen } from "lucide-react";
 import { GITHUB_REPO_URL, APP_VERSION, type WorkspaceFooterState } from "@/domain/constants";
+import type { MessageKey } from "@/domain/i18n";
 import { NotificationCenter } from "@/components/NotificationCenter";
+import { CreditsPanel } from "@/components/CreditsPanel";
+import { useLocale } from "@/hooks/useLocale";
 import { openExternalUrl, revealInExplorer } from "@/lib/files";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
-/** Lucide dropped the GitHub mark - keep a tiny inline SVG. */
 function GitHubIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden className={className}>
@@ -15,14 +17,18 @@ function GitHubIcon({ className }: { className?: string }) {
   );
 }
 
-function formatExportAgo(at: number, now: number): string {
+function formatExportAgo(
+  at: number,
+  now: number,
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string,
+): string {
   const sec = Math.max(0, Math.floor((now - at) / 1000));
-  if (sec < 45) return "Saved just now";
+  if (sec < 45) return t("status.savedJustNow");
   const min = Math.floor(sec / 60);
-  if (min < 60) return `Saved ${min}m ago`;
+  if (min < 60) return t("status.savedMinutesAgo", { minutes: min });
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `Saved ${hr}h ago`;
-  return `Saved ${Math.floor(hr / 24)}d ago`;
+  if (hr < 24) return t("status.savedHoursAgo", { hours: hr });
+  return t("status.savedDaysAgo", { days: Math.floor(hr / 24) });
 }
 
 function Dot() {
@@ -36,6 +42,7 @@ export function AppStatusBar({
   footer: WorkspaceFooterState;
   unsaved: boolean;
 }) {
+  const { t } = useLocale();
   const [busy, setBusy] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const canReveal = !!footer.file?.path;
@@ -56,7 +63,7 @@ export function AppStatusBar({
     try {
       await revealInExplorer(footer.file.path);
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Could not reveal file", true);
+      toast(error instanceof Error ? error.message : t("status.toast.revealFailed"), true);
     } finally {
       setBusy(false);
     }
@@ -66,14 +73,14 @@ export function AppStatusBar({
     try {
       await openExternalUrl(GITHUB_REPO_URL);
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Could not open GitHub", true);
+      toast(error instanceof Error ? error.message : t("status.toast.githubFailed"), true);
     }
   };
 
   const metaBits = [
     footer.format,
     footer.counts,
-    footer.lastExportAt != null ? formatExportAgo(footer.lastExportAt, now) : null,
+    footer.lastExportAt != null ? formatExportAgo(footer.lastExportAt, now, t) : null,
   ].filter(Boolean) as string[];
 
   return (
@@ -90,7 +97,7 @@ export function AppStatusBar({
             {canReveal ? (
               <button
                 type="button"
-                title="Reveal in Explorer"
+                title={t("status.revealTitle")}
                 disabled={busy}
                 onClick={() => void reveal()}
                 className={cn(
@@ -101,19 +108,19 @@ export function AppStatusBar({
                 )}
               >
                 <FolderOpen className="size-3" strokeWidth={1.75} />
-                Reveal
+                {t("status.reveal")}
               </button>
             ) : null}
           </>
         ) : (
-          <span className="font-mono text-[11px] text-muted-foreground">No file imported</span>
+          <span className="font-mono text-[11px] text-muted-foreground">{t("status.noFile")}</span>
         )}
 
         {unsaved ? (
           <>
             <Dot />
             <span className="shrink-0 rounded-md bg-warning/15 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wide text-warning">
-              Unsaved
+              {t("status.unsaved")}
             </span>
           </>
         ) : null}
@@ -134,11 +141,12 @@ export function AppStatusBar({
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
+        <CreditsPanel />
         <NotificationCenter />
         <button
           type="button"
-          title="Open GitHub repository"
-          aria-label="Open GitHub repository"
+          title={t("status.githubTitle")}
+          aria-label={t("status.githubTitle")}
           onClick={() => void openRepo()}
           className={cn(
             "inline-flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors",

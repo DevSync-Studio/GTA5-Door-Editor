@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils";
 
 interface UnsavedChangesBarProps {
@@ -17,9 +18,10 @@ export function UnsavedChangesBar({
   onReset,
   onSave,
   className,
-  description = "Save keeps these edits in the current session.",
-  saveLabel = "Save",
+  description,
+  saveLabel,
 }: UnsavedChangesBarProps) {
+  const { t } = useLocale();
   if (!open) return null;
 
   return (
@@ -31,8 +33,10 @@ export function UnsavedChangesBar({
     >
       <div className="pointer-events-auto flex w-full max-w-5xl items-center justify-between gap-6 rounded-lg border border-line-soft bg-panel-elevated px-5 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)]">
         <div className="min-w-0">
-          <p className="m-0 text-[13px] font-medium text-bright">Pending edits</p>
-          <p className="m-0 mt-0.5 text-[12px] text-muted-foreground">{description}</p>
+          <p className="m-0 text-[13px] font-medium text-bright">{t("common.pendingEdits")}</p>
+          <p className="m-0 mt-0.5 text-[12px] text-muted-foreground">
+            {description ?? t("common.unsavedBar.defaultDescription")}
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button
@@ -43,7 +47,7 @@ export function UnsavedChangesBar({
             disabled={saving}
             onClick={onReset}
           >
-            Discard
+            {t("common.discard")}
           </Button>
           <Button
             type="button"
@@ -52,7 +56,7 @@ export function UnsavedChangesBar({
             disabled={saving}
             onClick={onSave}
           >
-            {saving ? "Saving..." : saveLabel}
+            {saving ? t("common.saving") : (saveLabel ?? t("common.save"))}
           </Button>
         </div>
       </div>

@@ -361,7 +361,6 @@ body,
   opacity: 1;
 }
 
-/* Toast = same card language as Notifications menu */
 .app-toast {
   width: 360px !important;
   max-width: min(360px, calc(100vw - 24px)) !important;

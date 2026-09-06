@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLocale } from "@/hooks/useLocale";
 
 export function ConfirmDialog({
   open,
@@ -35,6 +36,7 @@ export function ConfirmDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <AlertDialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <AlertDialogContent size="default" className="sm:max-w-md">
@@ -45,12 +47,12 @@ export function ConfirmDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={onCancel}>{t("common.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             variant={danger ? "destructive" : "default"}
             onClick={onConfirm}
           >
-            Confirm
+            {t("common.confirm")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -73,6 +75,7 @@ export function PromptDialog({
   onCancel: () => void;
   onSubmit: (value: string) => void;
 }) {
+  const { t } = useLocale();
   const [value, setValue] = useState(initial);
 
   useEffect(() => {
@@ -102,9 +105,9 @@ export function PromptDialog({
           </div>
           <DialogFooter className="mt-5">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              {t("common.cancel")}
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit">{t("common.save")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

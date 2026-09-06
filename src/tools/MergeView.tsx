@@ -8,6 +8,7 @@ import { toast } from "@/lib/toast";
 import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { VirtualList } from "@/components/VirtualList";
 import { useNativeDrop } from "@/hooks/useNativeDrop";
+import { useLocale } from "@/hooks/useLocale";
 import { useWorkspaceActions } from "@/lib/workspaceActions";
 import { mergeTuningFiles, mergeTuningFilesMany, parseTuning, type MergeResult } from "@/domain/tuning";
 import { openTextFile, saveTextFileAs, type NativeFile } from "@/lib/files";
@@ -45,6 +46,7 @@ export const MergeView = memo(function MergeView({
   onFooter?: (state: import("@/domain/constants").WorkspaceFooterState) => void;
   isActive?: boolean;
 }) {
+  const { t } = useLocale();
   const workspaceActive = isActive;
   const [main, setMain] = useState<Slot | null>(null);
   const [incoming, setIncoming] = useState<Slot[]>([]);
@@ -76,13 +78,16 @@ export const MergeView = memo(function MergeView({
       file: main ? { name: main.name, path: main.path || null } : null,
       format: main ? "YMT" : null,
       counts: result
-        ? `${result.addTunings.length} adds · ${result.conflicts.length} conflicts`
+        ? t("status.counts.merge", {
+            adds: result.addTunings.length,
+            conflicts: result.conflicts.length,
+          })
         : incoming.length
-          ? `${incoming.length} conflicting`
+          ? t("status.counts.conflicting", { count: incoming.length })
           : null,
       lastExportAt,
     });
-  }, [main, incoming.length, result, lastExportAt, onFooter]);
+  }, [main, incoming.length, result, lastExportAt, onFooter, t]);
 
   const fileStatus = useMemo(() => {
     const map = new Map<string, { adds: number; conflicts: number }>();
@@ -120,8 +125,8 @@ export const MergeView = memo(function MergeView({
     const key = `${main.id}|${incoming.map((f) => f.id).join(",")}`;
     if (mergeFailKeyRef.current === key) return;
     mergeFailKeyRef.current = key;
-    toast("Could not merge these YMT files. Check they are valid doortuning XML.", true);
-  }, [main, incoming, result]);
+    toast(t("merge.toast.mergeFailed"), true);
+  }, [main, incoming, result, t]);
 
   useEffect(() => {
     onDirty(!!main || incoming.length > 0);
@@ -130,13 +135,13 @@ export const MergeView = memo(function MergeView({
   const setMainFile = useCallback((file: NativeFile) => {
     const slot = packSlot(file);
     setMain(slot);
-    toast(`Main file · ${slot.name}`, "info");
-  }, []);
+    toast(t("merge.toast.mainSet", { name: slot.name }), "info");
+  }, [t]);
 
   const addIncomingFiles = useCallback(
     (files: NativeFile[]) => {
       if (!main) {
-        toast("Import the main doortuning .ymt first.", true);
+        toast(t("merge.toast.importMainFirst"), true);
         return;
       }
       const next: Slot[] = [];
@@ -147,26 +152,31 @@ export const MergeView = memo(function MergeView({
             (main.path && slot.path && main.path === slot.path) ||
             (slot.name === main.name && slot.text === main.text)
           ) {
-            toast(`Skipped ${slot.name} - same as main file.`, true);
+            toast(t("merge.toast.skippedSameAsMain", { name: slot.name }), true);
             continue;
           }
           if (incoming.some((item) => item.name === slot.name && item.text === slot.text)) {
-            toast(`Skipped duplicate ${slot.name}.`, true);
+            toast(t("merge.toast.skippedDuplicate", { name: slot.name }), true);
             continue;
           }
           next.push(slot);
         } catch (error) {
-          toast(error instanceof Error ? error.message : `Could not read ${file.name}`, true);
+          toast(
+            error instanceof Error ? error.message : t("merge.toast.readFailed", { name: file.name }),
+            true,
+          );
         }
       }
       if (next.length === 0) return;
       setIncoming((prev) => [...prev, ...next]);
       toast(
-        next.length === 1 ? `Added ${next[0].name}` : `Added ${next.length} conflicting files`,
+        next.length === 1
+          ? t("merge.toast.addedOne", { name: next[0].name })
+          : t("merge.toast.addedMany", { count: next.length }),
         "info",
       );
     },
-    [incoming, main],
+    [incoming, main, t],
   );
 
   const loadDropped = useCallback(
@@ -175,29 +185,29 @@ export const MergeView = memo(function MergeView({
         if (!main) setMainFile(file);
         else addIncomingFiles([file]);
       } catch (error) {
-        toast(error instanceof Error ? error.message : "Could not import YMT", true);
+        toast(error instanceof Error ? error.message : t("merge.toast.importFailed"), true);
       }
     },
-    [addIncomingFiles, main, setMainFile],
+    [addIncomingFiles, main, setMainFile, t],
   );
 
   useNativeDrop(loadDropped, undefined, workspaceActive);
 
   const pickMain = async () => {
-    const file = await openTextFile("Main doortuning .ymt", [
-      { title: "YMT / XML", extensions: ["ymt", "xml", "txt"] },
+    const file = await openTextFile(t("merge.dialog.main"), [
+      { title: t("merge.dialog.filter"), extensions: ["ymt", "xml", "txt"] },
     ]);
     if (!file) return;
     try {
       setMainFile(file);
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Could not import YMT", true);
+      toast(error instanceof Error ? error.message : t("merge.toast.importFailed"), true);
     }
   };
 
   const pickIncoming = async () => {
-    const file = await openTextFile("Conflicting file (.ymt)", [
-      { title: "YMT / XML", extensions: ["ymt", "xml", "txt"] },
+    const file = await openTextFile(t("merge.dialog.incoming"), [
+      { title: t("merge.dialog.filter"), extensions: ["ymt", "xml", "txt"] },
     ]);
     if (!file) return;
     addIncomingFiles([file]);
@@ -233,31 +243,33 @@ export const MergeView = memo(function MergeView({
     if (!result || !main) return;
     try {
       const saved = await saveTextFileAs(
-        "Export merged YMT",
+        t("merge.dialog.export"),
         "doortuning_merged.ymt",
         result.xml,
-        [{ title: "YMT", extensions: ["ymt", "xml"] }],
+        [{ title: t("merge.dialog.filterYmt"), extensions: ["ymt", "xml"] }],
       );
       if (!saved) return;
       setLastExportAt(Date.now());
       toast(
-        nothingNew
-          ? "Exported - no new entries were added (main already has them)."
-          : "Merged YMT exported.",
+        nothingNew ? t("merge.toast.exportedNothingNew") : t("merge.toast.exported"),
         "export",
       );
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Save failed", true);
+      toast(error instanceof Error ? error.message : t("merge.toast.saveFailed"), true);
     }
   };
 
   const previewSummary = !result
-    ? "Adds missing entries. Main file wins on conflicts."
+    ? t("merge.preview.idle")
     : hasAdditions
-      ? `${result.addTunings.length} tunings · ${result.addMaps.length} mappings · ${result.conflicts.length} conflicts`
+      ? t("merge.preview.summary", {
+          tunings: result.addTunings.length,
+          mappings: result.addMaps.length,
+          conflicts: result.conflicts.length,
+        })
       : result.conflicts.length > 0
-        ? `Nothing to add · ${result.conflicts.length} conflicts`
-        : "Nothing to add - already covered.";
+        ? t("merge.preview.nothingConflicts", { count: result.conflicts.length })
+        : t("merge.preview.nothingCovered");
 
   useWorkspaceActions("merge", workspaceActive, {
     export: () => {
@@ -268,7 +280,7 @@ export const MergeView = memo(function MergeView({
 
   return (
     <WorkspaceShell
-      title="Doortuning Merger"
+      title={t("merge.title")}
       subtitle={main?.name}
       status={result ? (hasAdditions ? "ready" : "uptodate") : null}
       actions={
@@ -281,7 +293,7 @@ export const MergeView = memo(function MergeView({
             onClick={() => void exportMerged()}
           >
             <Upload className="size-3.5" strokeWidth={1.75} />
-            Export
+            {t("merge.export")}
           </Button>
           <Button
             type="button"
@@ -292,7 +304,7 @@ export const MergeView = memo(function MergeView({
             onClick={() => setConfirmReset(true)}
           >
             <RotateCcw className="size-3.5" strokeWidth={1.75} />
-            Reset
+            {t("merge.reset")}
           </Button>
         </>
       }
@@ -300,7 +312,7 @@ export const MergeView = memo(function MergeView({
       <div className="grid h-full min-h-0 min-w-0 grid-cols-[minmax(300px,400px)_minmax(0,1fr)] divide-x divide-line-soft xl:grid-cols-[minmax(320px,440px)_minmax(0,1fr)]">
         <div className="flex min-h-0 flex-col bg-sidebar/80">
           <div className="ide-panel-head shrink-0">
-            Main file
+            {t("merge.panel.main")}
             <Button
               type="button"
               size="sm"
@@ -309,7 +321,7 @@ export const MergeView = memo(function MergeView({
               onClick={() => void pickMain()}
             >
               <Download className="size-3.5" strokeWidth={1.75} />
-              {main ? "Replace" : "Import"}
+              {main ? t("merge.main.replace") : t("merge.main.import")}
             </Button>
           </div>
 
@@ -320,10 +332,10 @@ export const MergeView = memo(function MergeView({
                   {main.name}
                 </div>
                 <div className="mt-1 font-mono text-[11px] text-faint">
-                  {main.tunings} tunings · {main.mappings} mappings
+                  {t("merge.main.stats", { tunings: main.tunings, mappings: main.mappings })}
                 </div>
                 <p className="mt-2 m-0 text-[11px] leading-4 text-faint">
-                  Base file - conflicts keep these entries.
+                  {t("merge.main.baseHint")}
                 </p>
               </div>
             ) : (
@@ -336,15 +348,15 @@ export const MergeView = memo(function MergeView({
                   <Download className="size-4" strokeWidth={1.75} />
                 </div>
                 <div>
-                  <div className="text-[12px] font-medium text-bright">Import main .ymt</div>
-                  <div className="mt-0.5 text-[11px] text-faint">Drop a file or browse</div>
+                  <div className="text-[12px] font-medium text-bright">{t("merge.main.emptyTitle")}</div>
+                  <div className="mt-0.5 text-[11px] text-faint">{t("merge.main.emptyHint")}</div>
                 </div>
               </button>
             )}
           </div>
 
           <div className="ide-panel-head shrink-0 border-t-0">
-            Conflicting files
+            {t("merge.panel.conflicting")}
             <span className="flex items-center gap-2 font-normal normal-case tracking-normal">
               <Badge variant="secondary" className="h-8 px-2 font-mono text-[11px] tabular-nums">
                 {incoming.length}
@@ -357,7 +369,7 @@ export const MergeView = memo(function MergeView({
                 onClick={() => void pickIncoming()}
               >
                 <Plus className="size-3.5 shrink-0" strokeWidth={2.5} />
-                <span className="leading-none">Add</span>
+                <span className="leading-none">{t("common.add")}</span>
               </Button>
             </span>
           </div>
@@ -366,18 +378,18 @@ export const MergeView = memo(function MergeView({
             {!main ? (
               <div className="grid h-full place-items-center px-4 text-center">
                 <p className="m-0 text-[12px] leading-5 text-faint">
-                  Import the main file first, then add conflicting files here.
+                  {t("merge.incoming.needMain")}
                 </p>
               </div>
             ) : incoming.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
                 <FilePlus2 className="size-5 text-faint" strokeWidth={1.5} />
                 <p className="m-0 max-w-55 text-[12px] leading-5 text-faint">
-                  Add one or more conflicting .ymt files to collect missing tunings and mappings.
+                  {t("merge.incoming.empty")}
                 </p>
                 <Button type="button" size="sm" className="gap-1.5" onClick={() => void pickIncoming()}>
                   <Plus className="size-3.5" strokeWidth={2.5} />
-                  Add conflicting file
+                  {t("merge.incoming.add")}
                 </Button>
               </div>
             ) : (
@@ -386,27 +398,34 @@ export const MergeView = memo(function MergeView({
                 itemHeight={64}
                 render={(file) => {
                   const status = fileStatus.get(file.id);
+                  const statusLabel = status
+                    ? status.adds > 0
+                      ? status.conflicts
+                        ? t("merge.incoming.status.newWithConflicts", {
+                            adds: status.adds,
+                            conflicts: status.conflicts,
+                          })
+                        : t("merge.incoming.status.new", { count: status.adds })
+                      : status.conflicts > 0
+                        ? t("merge.incoming.status.covered", { count: status.conflicts })
+                        : t("merge.incoming.status.alreadyCovered")
+                    : t("merge.incoming.status.fallback", {
+                        tunings: file.tunings,
+                        mappings: file.mappings,
+                      });
                   return (
                     <div className="ide-row-actions">
                       <div className="ide-row-main pointer-events-none">
                         <span className="w-full truncate">{file.name}</span>
-                        <small>
-                          {status
-                            ? status.adds > 0
-                              ? `${status.adds} new${status.conflicts ? ` · ${status.conflicts} conflicts` : ""}`
-                              : status.conflicts > 0
-                                ? `Covered · ${status.conflicts} conflicts`
-                                : "Already covered"
-                            : `${file.tunings} tunings · ${file.mappings} maps`}
-                        </small>
+                        <small>{statusLabel}</small>
                       </div>
                       <div className="ide-row-btns">
                         <Button
                           type="button"
                           size="icon-sm"
                           variant="ghost"
-                          title={`Remove ${file.name}`}
-                          aria-label={`Remove ${file.name}`}
+                          title={t("merge.removeFile", { name: file.name })}
+                          aria-label={t("merge.removeFile", { name: file.name })}
                           className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
                           onClick={() => removeIncoming(file.id)}
                         >
@@ -425,7 +444,7 @@ export const MergeView = memo(function MergeView({
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line-soft px-5 py-3">
             <div className="min-w-0">
               <div className="truncate text-[14px] font-semibold tracking-tight text-bright">
-                {result ? "Merge preview" : "Preview"}
+                {result ? t("merge.preview.merge") : t("merge.preview")}
               </div>
               <div className="mt-0.5 truncate text-[11px] text-faint">{previewSummary}</div>
             </div>
@@ -439,7 +458,7 @@ export const MergeView = memo(function MergeView({
                   )}
                   onClick={() => setTab("adds")}
                 >
-                  Additions
+                  {t("merge.tab.additions")}
                 </button>
                 <button
                   type="button"
@@ -449,7 +468,7 @@ export const MergeView = memo(function MergeView({
                   )}
                   onClick={() => setTab("conflicts")}
                 >
-                  Conflicts
+                  {t("merge.tab.conflicts")}
                   {result.conflicts.length > 0 ? (
                     <span className="ml-1.5 font-mono text-[10px] text-warning">{result.conflicts.length}</span>
                   ) : null}
@@ -461,9 +480,7 @@ export const MergeView = memo(function MergeView({
           {!result ? (
             <div className="grid flex-1 place-items-center px-6 text-center">
               <p className="m-0 max-w-sm text-[13px] leading-6 text-muted-foreground">
-                {!main
-                  ? "Import your main doortuning on the left to begin."
-                  : "Add conflicting files on the left to build the merge preview."}
+                {!main ? t("merge.empty.needMain") : t("merge.empty.needIncoming")}
               </p>
             </div>
           ) : (
@@ -472,7 +489,7 @@ export const MergeView = memo(function MergeView({
                 <SearchField
                   value={search}
                   onChange={setSearch}
-                  placeholder={tab === "conflicts" ? "Filter conflicts" : "Filter additions"}
+                  placeholder={tab === "conflicts" ? t("merge.filter.conflicts") : t("merge.filter.additions")}
                 />
               </div>
 
@@ -480,21 +497,19 @@ export const MergeView = memo(function MergeView({
                 <div className="flex min-h-0 flex-1 flex-col">
                   {conflicts.length === 0 ? (
                     <div className="grid h-full place-items-center px-4 text-center text-[12px] text-faint">
-                      No conflicts
+                      {t("merge.empty.noConflicts")}
                     </div>
                   ) : (
                     <>
                       <p className="m-0 shrink-0 border-b border-line-soft px-3 py-2 text-[11px] leading-4 text-faint">
-                        {nothingNew
-                          ? "Main already has these names. Export will not change them."
-                          : "Main wins when both files share a tuning name or model mapping."}
+                        {nothingNew ? t("merge.conflicts.hintNothingNew") : t("merge.conflicts.hint")}
                       </p>
                       <div className="grid shrink-0 grid-cols-[minmax(0,0.7fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 border-b border-line-soft px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-faint">
-                        <span>Type</span>
-                        <span>Name</span>
-                        <span>Main</span>
-                        <span className="text-warning">Conflicting</span>
-                        <span className="text-right">File</span>
+                        <span>{t("merge.conflicts.col.type")}</span>
+                        <span>{t("merge.conflicts.col.name")}</span>
+                        <span>{t("merge.conflicts.col.main")}</span>
+                        <span className="text-warning">{t("merge.conflicts.col.conflicting")}</span>
+                        <span className="text-right">{t("merge.conflicts.col.file")}</span>
                       </div>
                       <div className="min-h-0 flex-1 basis-0">
                         <VirtualList
@@ -503,7 +518,9 @@ export const MergeView = memo(function MergeView({
                           render={(item) => (
                             <div className="grid h-full min-w-0 grid-cols-[minmax(0,0.7fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] items-center gap-3 border-b border-line-soft/70 px-3">
                               <span className="min-w-0 truncate text-[11px] uppercase tracking-wide text-faint">
-                                {item.kind === "tuning" ? "Tuning" : "Mapping"}
+                                {item.kind === "tuning"
+                                  ? t("merge.conflicts.kind.tuning")
+                                  : t("merge.conflicts.kind.mapping")}
                               </span>
                               <span className="min-w-0 truncate text-[13px] text-bright">{item.model}</span>
                               <span className="min-w-0 truncate font-mono text-[12px] text-bright">
@@ -525,14 +542,14 @@ export const MergeView = memo(function MergeView({
               ) : nothingNew ? (
                 <div className="grid flex-1 place-items-center px-6 text-center">
                   <p className="m-0 max-w-sm text-[13px] leading-6 text-muted-foreground">
-                    No new tunings or mappings to add. Conflicting files are already covered by main.
+                    {t("merge.empty.nothingNew")}
                   </p>
                 </div>
               ) : (
                 <div className="grid min-h-0 flex-1 grid-cols-1 divide-y divide-line-soft lg:grid-cols-2 lg:divide-x lg:divide-y-0">
                   <div className="flex min-h-0 flex-col">
                     <div className="ide-panel-head shrink-0">
-                      New tunings
+                      {t("merge.additions.newTunings")}
                       <Badge variant="secondary" className="h-8 px-2 font-mono text-[11px] tabular-nums">
                         {tunings.length}
                       </Badge>
@@ -540,7 +557,7 @@ export const MergeView = memo(function MergeView({
                     <div className="min-h-0 flex-1 basis-0">
                       {tunings.length === 0 ? (
                         <div className="grid h-full place-items-center px-4 text-center text-[12px] text-faint">
-                          None
+                          {t("common.empty.none")}
                         </div>
                       ) : (
                         <VirtualList
@@ -557,7 +574,7 @@ export const MergeView = memo(function MergeView({
                   </div>
                   <div className="flex min-h-0 flex-col">
                     <div className="ide-panel-head shrink-0">
-                      New mappings
+                      {t("merge.additions.newMappings")}
                       <Badge variant="secondary" className="h-8 px-2 font-mono text-[11px] tabular-nums">
                         {maps.length}
                       </Badge>
@@ -565,7 +582,7 @@ export const MergeView = memo(function MergeView({
                     <div className="min-h-0 flex-1 basis-0">
                       {maps.length === 0 ? (
                         <div className="grid h-full place-items-center px-4 text-center text-[12px] text-faint">
-                          None
+                          {t("common.empty.none")}
                         </div>
                       ) : (
                         <VirtualList
@@ -590,8 +607,8 @@ export const MergeView = memo(function MergeView({
 
       <ConfirmDialog
         open={confirmReset}
-        title="Reset merger"
-        body="Clear the main file, all conflicting files, and the merge preview."
+        title={t("merge.confirm.reset.title")}
+        body={t("merge.confirm.reset.body")}
         danger
         onCancel={() => setConfirmReset(false)}
         onConfirm={() => {

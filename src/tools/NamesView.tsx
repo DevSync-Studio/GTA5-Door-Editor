@@ -10,6 +10,7 @@ import { toast } from "@/lib/toast";
 import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { VirtualList } from "@/components/VirtualList";
 import { useNativeDrop } from "@/hooks/useNativeDrop";
+import { useLocale } from "@/hooks/useLocale";
 import { useWorkspaceActions } from "@/lib/workspaceActions";
 import { nametableBytes, parseNametable } from "@/domain/audio";
 import { openTextFile, saveTextFile, saveTextFileAs, backupExisting, fileNameFromPath, type NativeFile } from "@/lib/files";
@@ -51,6 +52,7 @@ export const NamesView = memo(function NamesView({
   onNames: (names: string[]) => void;
   audioDoorNames?: string[];
 }) {
+  const { t } = useLocale();
   const workspaceActive = isActive;
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
@@ -70,10 +72,10 @@ export const NamesView = memo(function NamesView({
         ? { name: fileNameFromPath(importPath), path: importPath }
         : null,
       format: "nametable",
-      counts: names.length ? `${names.length} names` : null,
+      counts: names.length ? t("status.counts.names", { count: names.length }) : null,
       lastExportAt,
     });
-  }, [importPath, names.length, lastExportAt, onFooter]);
+  }, [importPath, names.length, lastExportAt, onFooter, t]);
 
   const sorted = useMemo(() => [...names].sort((a, b) => a.localeCompare(b)), [names]);
   const shown = useMemo(() => {
@@ -106,25 +108,30 @@ export const NamesView = memo(function NamesView({
       try {
         const values = parseNametable(file.text).map(normalizeName).filter(Boolean);
         if (values.length === 0) {
-          toast("No names found in that file.", true);
+          toast(t("names.toast.noneInFile"), true);
           return;
         }
         const next = [...new Set([...names, ...values])];
         onNames(next);
         if (file.path) setImportPath(file.path);
-        toast(values.length === 1 ? "Imported 1 name" : `Imported ${values.length} names`, "info");
+        toast(
+          values.length === 1
+            ? t("names.toast.importedOne")
+            : t("names.toast.importedMany", { count: values.length }),
+          "info",
+        );
       } catch (error) {
-        toast(error instanceof Error ? error.message : "Could not import nametable", true);
+        toast(error instanceof Error ? error.message : t("names.toast.importFailed"), true);
       }
     },
-    [names, onNames],
+    [names, onNames, t],
   );
 
   useNativeDrop(loadFile, undefined, workspaceActive);
 
   const pickImport = async () => {
-    const file = await openTextFile("Import nametable", [
-      { title: "DAT151 nametable", extensions: ["dat151.nametable", "nametable", "txt"] },
+    const file = await openTextFile(t("names.dialog.import"), [
+      { title: t("names.dialog.filter"), extensions: ["dat151.nametable", "nametable", "txt"] },
     ]);
     if (file) loadFile(file);
   };
@@ -141,43 +148,47 @@ export const NamesView = memo(function NamesView({
 
   const addFromAudio = () => {
     if (audioCandidates.length === 0) {
-      toast("Save at least one door in Audio first.", true);
+      toast(t("names.toast.saveAudioFirst"), true);
       return;
     }
     const have = new Set(names.map((n) => n.toLowerCase()));
     const fresh = audioCandidates.filter((n) => !have.has(n.toLowerCase()));
     if (fresh.length === 0) {
-      toast("All Audio door names are already in the nametable.");
+      toast(t("names.toast.allFromAudio"));
       return;
     }
     onNames([...names, ...fresh]);
     setSearch("");
     setSelected(fresh[0] ?? null);
-    toast(fresh.length === 1 ? "Added 1 name from Audio" : `Added ${fresh.length} names from Audio`);
+    toast(
+      fresh.length === 1
+        ? t("names.toast.addedOneFromAudio")
+        : t("names.toast.addedManyFromAudio", { count: fresh.length }),
+    );
   };
 
   const addName = (raw: string) => {
     const name = normalizeName(raw);
     if (!name) {
-      toast("Enter a name.", true);
+      toast(t("names.toast.enterName"), true);
       return;
     }
     if (names.some((item) => item.toLowerCase() === name.toLowerCase())) {
-      toast("That name already exists.", true);
+      toast(t("names.toast.nameExists"), true);
       return;
     }
     onNames([...names, name]);
     setPromptAdd(false);
     setSearch("");
     setSelected(name);
-    toast(`Added ${name}`);
+    toast(t("names.toast.added", { name }));
   };
 
   const applyRename = (nextDraft: string): string[] | null => {
     if (!active) return names;
     const name = normalizeName(nextDraft);
     if (!name) {
-      toast("Name can't be empty.", true);
+      toast(t("names.toast.nameEmpty"), true);
       return null;
     }
     if (
@@ -185,7 +196,7 @@ export const NamesView = memo(function NamesView({
         (item) => item.toLowerCase() === name.toLowerCase() && item.toLowerCase() !== active.toLowerCase(),
       )
     ) {
-      toast("That name already exists.", true);
+      toast(t("names.toast.nameExists"), true);
       return null;
     }
     const next = names.map((item) => (item === active ? name : item));
@@ -202,55 +213,55 @@ export const NamesView = memo(function NamesView({
       next = renamed;
     }
     setBaseline([...next]);
-    toast("Session saved - Export or Replace import to write a file.", "save");
+    toast(t("names.toast.sessionSaved"), "save");
   };
 
   const discardSession = () => {
     onNames([...baseline]);
     setDraft("");
     setSelected(null);
-    toast("Discarded session changes");
+    toast(t("common.toast.discardedSession"));
   };
 
   const removeName = (name: string) => {
     onNames(names.filter((item) => item !== name));
     if (selected === name) setSelected(null);
     setConfirmDelete(null);
-    toast("Name removed");
+    toast(t("names.toast.removed"));
   };
 
   const exportTable = async () => {
     const next = flushNames();
     if (!next) return;
     if (next.length === 0) {
-      toast("Add or import at least one name first.", true);
+      toast(t("names.toast.needOne"), true);
       return;
     }
     try {
       const saved = await saveTextFileAs(
-        "Export nametable",
+        t("names.dialog.export"),
         "names.dat151.nametable",
         nametableBytes(next),
-        [{ title: "DAT151 nametable", extensions: ["dat151.nametable", "nametable", "txt"] }],
+        [{ title: t("names.dialog.filter"), extensions: ["dat151.nametable", "nametable", "txt"] }],
       );
       if (!saved) return;
       setBaseline([...next]);
       setLastExportAt(Date.now());
-      toast(`Exported ${saved.name}`, "export");
+      toast(t("common.toast.exported", { name: saved.name }), "export");
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Export failed", true);
+      toast(error instanceof Error ? error.message : t("common.toast.exportFailed"), true);
     }
   };
 
   const replaceImport = async () => {
     if (!importPath) {
-      toast("No imported file to replace - use Export instead.", true);
+      toast(t("common.toast.noImportToReplace"), true);
       return;
     }
     const next = flushNames();
     if (!next) return;
     if (next.length === 0) {
-      toast("Add or import at least one name first.", true);
+      toast(t("names.toast.needOne"), true);
       return;
     }
     try {
@@ -259,9 +270,12 @@ export const NamesView = memo(function NamesView({
       setBaseline([...next]);
       setConfirmReplace(false);
       setLastExportAt(Date.now());
-      toast(backup ? "Imported file replaced (backup created)" : "Imported file replaced", "export");
+      toast(
+        backup ? t("common.toast.importedReplacedBackup") : t("common.toast.importedReplaced"),
+        "export",
+      );
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Replace failed", true);
+      toast(error instanceof Error ? error.message : t("common.toast.replaceFailed"), true);
     }
   };
 
@@ -272,7 +286,7 @@ export const NamesView = memo(function NamesView({
 
   return (
     <WorkspaceShell
-      title="Nametables Generator"
+      title={t("names.title")}
       subtitle={importPath ? fileNameFromPath(importPath) : undefined}
       status={sessionDirty ? "unsaved" : null}
       actions={
@@ -285,15 +299,15 @@ export const NamesView = memo(function NamesView({
             disabled={audioCandidates.length === 0}
             title={
               audioCandidates.length === 0
-                ? "Save doors in Audio first"
+                ? t("names.fromAudio.none")
                 : audioNewCount === 0
-                  ? "All Audio names already listed"
-                  : `Add ${audioNewCount} new name(s) from Audio`
+                  ? t("names.fromAudio.allListed")
+                  : t("names.fromAudio.addCount", { count: audioNewCount })
             }
             onClick={addFromAudio}
           >
             <ListPlus className="size-3.5" strokeWidth={1.75} />
-            From Audio
+            {t("names.fromAudio")}
             {audioNewCount > 0 ? (
               <Badge variant="secondary" className="h-5 px-1.5 font-mono text-[10px] tabular-nums">
                 {audioNewCount}
@@ -302,7 +316,7 @@ export const NamesView = memo(function NamesView({
           </Button>
           <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => void pickImport()}>
             <Download className="size-3.5" strokeWidth={1.75} />
-            Import
+            {t("names.import")}
           </Button>
           <Button
             type="button"
@@ -312,7 +326,7 @@ export const NamesView = memo(function NamesView({
             onClick={() => void exportTable()}
           >
             <Upload className="size-3.5" strokeWidth={1.75} />
-            Export
+            {t("names.export")}
           </Button>
           {importPath ? (
             <Button
@@ -324,7 +338,7 @@ export const NamesView = memo(function NamesView({
               onClick={() => setConfirmReplace(true)}
             >
               <Replace className="size-3.5" strokeWidth={1.75} />
-              Replace import
+              {t("common.replaceImport")}
             </Button>
           ) : null}
           <Button
@@ -336,7 +350,7 @@ export const NamesView = memo(function NamesView({
             onClick={() => setConfirmReset(true)}
           >
             <RotateCcw className="size-3.5" strokeWidth={1.75} />
-            Reset
+            {t("common.reset")}
           </Button>
         </>
       }
@@ -345,7 +359,7 @@ export const NamesView = memo(function NamesView({
         <div className="grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(300px,400px)_minmax(0,1fr)] divide-x divide-line-soft xl:grid-cols-[minmax(320px,440px)_minmax(0,1fr)]">
           <div className="flex min-h-0 flex-col bg-sidebar/80">
             <div className="ide-panel-head shrink-0">
-              Names
+              {t("names.panel.names")}
               <span className="flex items-center gap-2 font-normal normal-case tracking-normal">
                 <Badge variant="secondary" className="h-8 px-2 font-mono text-[11px] tabular-nums">
                   {shown.length}/{names.length}
@@ -357,7 +371,7 @@ export const NamesView = memo(function NamesView({
                   onClick={() => setPromptAdd(true)}
                 >
                   <Plus className="size-3.5 shrink-0" strokeWidth={2.5} />
-                  <span className="leading-none">Add</span>
+                  <span className="leading-none">{t("names.add")}</span>
                 </Button>
               </span>
             </div>
@@ -370,7 +384,7 @@ export const NamesView = memo(function NamesView({
                 <Input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search names"
+                  placeholder={t("names.search")}
                   className="h-9 rounded-md pl-8"
                 />
               </div>
@@ -379,7 +393,7 @@ export const NamesView = memo(function NamesView({
               {shown.length === 0 ? (
                 <div className="grid h-full place-items-center px-4 text-center">
                   <p className="m-0 text-[12px] leading-5 text-faint">
-                    {names.length === 0 ? "No names yet." : "No matches."}
+                    {names.length === 0 ? t("names.empty") : t("names.noMatches")}
                   </p>
                 </div>
               ) : (
@@ -389,8 +403,8 @@ export const NamesView = memo(function NamesView({
                   render={(name) => {
                     const isActive = name === active;
                     const subtitle = audioDoorNames.some((d) => d.toLowerCase() === name.toLowerCase())
-                      ? "from Audio"
-                      : "nametable entry";
+                      ? t("names.subtitle.fromAudio")
+                      : t("names.subtitle.entry");
                     return (
                       <div className={cn("ide-row-actions", isActive && "active")}>
                         <button
@@ -398,7 +412,7 @@ export const NamesView = memo(function NamesView({
                           className="ide-row-main"
                           onClick={() => {
                             if (formDirty && active !== name) {
-                              toast("Save or discard the current edit first.", true);
+                              toast(t("names.toast.saveOrDiscardEdit"), true);
                               return;
                             }
                             setSelected(name);
@@ -412,8 +426,8 @@ export const NamesView = memo(function NamesView({
                             type="button"
                             size="icon-sm"
                             variant="ghost"
-                            title={`Remove ${name}`}
-                            aria-label={`Remove ${name}`}
+                            title={t("names.remove", { name })}
+                            aria-label={t("names.remove", { name })}
                             className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
                             onClick={(event) => {
                               event.stopPropagation();
@@ -442,24 +456,24 @@ export const NamesView = memo(function NamesView({
                       </div>
                       {formDirty ? (
                         <span className="shrink-0 rounded-md bg-warning/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide text-warning">
-                          Editing
+                          {t("common.editingBadge")}
                         </span>
                       ) : null}
                     </div>
                     <div className="mt-0.5 text-[11px] text-faint">
-                      Rename this entry - spaces become underscores
+                      {t("names.detail.hint")}
                     </div>
                   </div>
                 </div>
 
                 <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-4 sm:p-5">
                   <section className="w-full shrink-0 rounded-lg border border-line-soft bg-panel/40 p-4 sm:p-5">
-                    <h3 className="mb-1 text-[13px] font-medium tracking-tight text-muted-foreground">Identity</h3>
+                    <h3 className="mb-1 text-[13px] font-medium tracking-tight text-muted-foreground">{t("names.section.identity")}</h3>
                     <p className="mb-4 m-0 text-[12px] leading-5 text-faint">
-                      Name kept in this session. Export / Replace import writes the .dat151.nametable (including auto dasl_ links).
+                      {t("names.section.identityHint")}
                     </p>
                     <div className="max-w-md">
-                      <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">Name</Label>
+                      <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">{t("names.field.name")}</Label>
                       <Input
                         value={draft}
                         onChange={(event) => setDraft(event.target.value)}
@@ -470,7 +484,7 @@ export const NamesView = memo(function NamesView({
                       />
                       {draft.trim() && normalizeName(draft) !== active ? (
                         <p className="mt-1.5 m-0 font-mono text-[11px] text-faint">
-                          Becomes: {normalizeName(draft)}
+                          {t("names.becomes", { name: normalizeName(draft) })}
                         </p>
                       ) : null}
                     </div>
@@ -480,7 +494,7 @@ export const NamesView = memo(function NamesView({
             ) : (
               <div className="grid flex-1 place-items-center px-6 text-center">
                 <p className="m-0 text-[13px] leading-6 text-muted-foreground">
-                  Select a name to edit, or use Add / From Audio / Import above.
+                  {t("names.emptyDetail")}
                 </p>
               </div>
             )}
@@ -491,22 +505,22 @@ export const NamesView = memo(function NamesView({
           open={sessionDirty}
           onReset={discardSession}
           onSave={saveSession}
-          description="Save keeps edits in this session only. Export or Replace import writes a file."
+          description={t("names.unsavedBar.description")}
         />
       </div>
 
       <PromptDialog
         open={promptAdd}
-        title="Add name"
-        label="Name"
+        title={t("names.prompt.add.title")}
+        label={t("names.prompt.add.label")}
         initial=""
         onCancel={() => setPromptAdd(false)}
         onSubmit={addName}
       />
       <ConfirmDialog
         open={confirmReset}
-        title="Reset nametable"
-        body="Clear all names from this nametable."
+        title={t("names.confirm.reset.title")}
+        body={t("names.confirm.reset.body")}
         danger
         onCancel={() => setConfirmReset(false)}
         onConfirm={() => {
@@ -519,11 +533,11 @@ export const NamesView = memo(function NamesView({
       />
       <ConfirmDialog
         open={confirmReplace}
-        title="Replace imported file"
+        title={t("common.dialog.replaceImported.title")}
         body={
           importPath
-            ? `Overwrite the imported nametable on disk?\n${importPath}`
-            : "No import path."
+            ? t("names.confirm.replace.body", { path: importPath })
+            : t("names.confirm.replace.noPath")
         }
         danger
         onCancel={() => setConfirmReplace(false)}
@@ -533,8 +547,8 @@ export const NamesView = memo(function NamesView({
       />
       <ConfirmDialog
         open={!!confirmDelete}
-        title="Remove name"
-        body={`Remove ${confirmDelete}?`}
+        title={t("names.confirm.remove.title")}
+        body={t("names.confirm.remove.body", { name: confirmDelete ?? "" })}
         danger
         onCancel={() => setConfirmDelete(null)}
         onConfirm={() => {

@@ -23,7 +23,13 @@ import { WorkspaceShell } from "@/components/WorkspaceShell";
 import { VirtualList } from "@/components/VirtualList";
 import { useNativeDrop, useNativeDragHighlight } from "@/hooks/useNativeDrop";
 import { useWorkspaceActions } from "@/lib/workspaceActions";
-import { DOOR_TYPES, ytypDoorFlagsPresetLabel } from "@/domain/constants";
+import { useLocale } from "@/hooks/useLocale";
+import type { MessageKey } from "@/domain/i18n";
+import {
+  DOOR_TYPES,
+  YTYP_DOOR_FLAGS_AUTOMATIC,
+  YTYP_DOOR_FLAGS_NORMAL,
+} from "@/domain/constants";
 import {
   applyDoorTypeChange,
   applyUseFlagsChange,
@@ -53,10 +59,36 @@ function isYtypFileName(fileName: string): boolean {
 
 async function readBrowserYtypFile(file: File): Promise<OpenedYtyp> {
   if (!isYtypFileName(file.name)) {
-    throw new Error("Unsupported file type. Use .ytyp or .xml.");
+    throw new Error("unsupported");
   }
   const buffer = new Uint8Array(await file.arrayBuffer());
   return parseYtypBytes(file.name, buffer);
+}
+
+function doorTypeLabel(
+  id: string,
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string,
+): string {
+  switch (id) {
+    case "5":
+    case "7":
+    case "8":
+    case "9":
+    case "10":
+    case "12":
+      return t(`workspace.doorType.${id}` as MessageKey);
+    default:
+      return t("type.list.unknown");
+  }
+}
+
+function flagsPresetLabel(
+  flags: number,
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string,
+): string | null {
+  if (flags === YTYP_DOOR_FLAGS_NORMAL) return t("workspace.flagsPreset.normal");
+  if (flags === YTYP_DOOR_FLAGS_AUTOMATIC) return t("workspace.flagsPreset.automatic");
+  return null;
 }
 
 function TypeDropZone({
@@ -66,6 +98,7 @@ function TypeDropZone({
   onFile: (file: OpenedYtyp) => void;
   isActive?: boolean;
 }) {
+  const { t } = useLocale();
   const [isDragging, setIsDragging] = useState(false);
   const dragDepthRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -87,13 +120,13 @@ function TypeDropZone({
 
   const browseNative = async () => {
     try {
-      const file = await openYtypFile("Import YTYP", [
-        { title: "YTYP", extensions: ["ytyp", "xml"] },
-        { title: "YTYP XML", extensions: ["xml"] },
+      const file = await openYtypFile(t("type.dialog.import"), [
+        { title: t("type.dialog.filterYtyp"), extensions: ["ytyp", "xml"] },
+        { title: t("type.dialog.filterYtypXml"), extensions: ["xml"] },
       ]);
       if (file) onFile(file);
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Could not open YTYP", true);
+      toast(error instanceof Error ? error.message : t("type.toast.openFailed"), true);
     }
   };
 
@@ -126,19 +159,25 @@ function TypeDropZone({
         const file = event.dataTransfer.files.item(0);
         if (!file) return;
         if (!isYtypFileName(file.name)) {
-          toast("Unsupported file type. Use .ytyp or .xml.", true);
+          toast(t("type.drop.unsupported"), true);
           return;
         }
         try {
           onFile(await readBrowserYtypFile(file));
         } catch (error) {
-          toast(error instanceof Error ? error.message : "Could not read file", true);
+          const message =
+            error instanceof Error && error.message === "unsupported"
+              ? t("type.drop.unsupported")
+              : error instanceof Error
+                ? error.message
+                : t("common.toast.couldNotReadFile");
+          toast(message, true);
         }
       }}
     >
       <div
         role="region"
-        aria-label="Drop YTYP file"
+        aria-label={t("type.drop.aria")}
         aria-dropeffect={isDragging ? "copy" : "none"}
         className={cn(
           "flex h-[min(72%,42rem)] w-full max-w-4xl flex-col items-center justify-center gap-4 rounded-xl border px-8 text-center transition-[border-color,border-style,background-color,box-shadow] duration-150 sm:gap-5 sm:px-12 lg:gap-6 lg:px-16",
@@ -158,16 +197,16 @@ function TypeDropZone({
 
         <div className="space-y-1.5">
           <p className="m-0 text-[15px] text-bright sm:text-[16px] lg:text-[18px]">
-            Drag and drop your YTYP file here
+            {t("type.drop.headline")}
           </p>
           <p className="m-0 text-[12px] text-muted-foreground sm:text-[13px]">
-          Supports .ytyp and .ytyp.xml formats
+            {t("type.drop.formats")}
           </p>
         </div>
 
         <div className="flex w-full max-w-[14rem] items-center gap-2.5 py-0.5">
           <span className="h-px flex-1 bg-line" />
-          <span className="text-[12px] text-faint">or</span>
+          <span className="text-[12px] text-faint">{t("common.or")}</span>
           <span className="h-px flex-1 bg-line" />
         </div>
 
@@ -178,7 +217,7 @@ function TypeDropZone({
           className="border-line bg-panel-2/60 text-bright hover:border-primary hover:bg-primary hover:text-primary-foreground active:bg-primary/85 active:border-primary/85"
           onClick={() => void browseNative()}
         >
-          Browse Files
+          {t("common.browseFiles")}
         </Button>
 
         <input
@@ -193,7 +232,13 @@ function TypeDropZone({
             try {
               onFile(await readBrowserYtypFile(file));
             } catch (error) {
-              toast(error instanceof Error ? error.message : "Could not read file", true);
+              const message =
+                error instanceof Error && error.message === "unsupported"
+                  ? t("type.drop.unsupported")
+                  : error instanceof Error
+                    ? error.message
+                    : t("common.toast.couldNotReadFile");
+              toast(message, true);
             }
           }}
         />
@@ -208,6 +253,7 @@ export const TypeView = memo(function TypeView(props: {
   isActive?: boolean;
 }) {
   const { onDirty, onFooter, isActive = true } = props;
+  const { t } = useLocale();
   const workspaceActive = isActive;
   const [path, setPath] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -228,6 +274,18 @@ export const TypeView = memo(function TypeView(props: {
 
   const hasUnsaved = xml != null && baselineXml != null && xml !== baselineXml;
 
+  const doorTypeOptions = useMemo(
+    () =>
+      Object.keys(DOOR_TYPES).map((value) => ({
+        value,
+        label: t("type.option.doorTypeLabeled", {
+          label: doorTypeLabel(value, t),
+          value,
+        }),
+      })),
+    [t],
+  );
+
   useEffect(() => {
     onDirty(hasUnsaved);
   }, [hasUnsaved, onDirty]);
@@ -240,32 +298,36 @@ export const TypeView = memo(function TypeView(props: {
     }
     onFooter({
       file: { name: fileName, path: path || null },
-      format: format === "binary" ? "YTYP" : "YTYP XML",
-      counts: items.length ? `${items.length} archetypes` : null,
+      format: format === "binary" ? t("status.format.ytyp") : t("status.format.ytypXml"),
+      counts: items.length ? t("status.counts.archetypes", { count: items.length }) : null,
       lastExportAt,
     });
-  }, [path, fileName, format, items.length, lastExportAt, onFooter]);
+  }, [path, fileName, format, items.length, lastExportAt, onFooter, t]);
 
-  const loadFile = useCallback((file: OpenedYtyp) => {
-    try {
-      const data = parseYtyp(file.text);
-      if (data.length === 0) {
-        throw new Error("No archetypes with specialAttribute were found in this YTYP.");
+  const loadFile = useCallback(
+    (file: OpenedYtyp) => {
+      try {
+        const data = parseYtyp(file.text);
+        if (data.length === 0) {
+          toast(t("type.toast.noArchetypes"), true);
+          return;
+        }
+        setPath(file.path || null);
+        setFileName(file.name);
+        setXml(file.text);
+        setBaselineXml(file.text);
+        setFormat(file.format === "binary" ? "binary" : "xml");
+        setBinaryBase64(file.binaryBase64 ?? null);
+        setBaselineBinaryBase64(file.binaryBase64 ?? null);
+        setItems(data);
+        setSelected(0);
+        toast(t("common.toast.opened", { name: file.name }), "info");
+      } catch (error) {
+        toast(error instanceof Error ? error.message : t("type.toast.importFailed"), true);
       }
-      setPath(file.path || null);
-      setFileName(file.name);
-      setXml(file.text);
-      setBaselineXml(file.text);
-      setFormat(file.format === "binary" ? "binary" : "xml");
-      setBinaryBase64(file.binaryBase64 ?? null);
-      setBaselineBinaryBase64(file.binaryBase64 ?? null);
-      setItems(data);
-      setSelected(0);
-      toast(`Opened ${file.name}`, "info");
-    } catch (error) {
-      toast(error instanceof Error ? error.message : "Could not import YTYP", true);
-    }
-  }, []);
+    },
+    [t],
+  );
 
   useNativeDrop<OpenedYtyp>(
     (file) => {
@@ -293,10 +355,10 @@ export const TypeView = memo(function TypeView(props: {
 
   const closeFile = () => {
     setConfirm({
-      title: "Unload file",
+      title: t("common.dialog.unload.title"),
       body: hasUnsaved
-        ? "You still have pending edits. Unload anyway and lose them?"
-        : "Unload this YTYP file from the editor.",
+        ? t("type.confirm.unload.bodyDirty")
+        : t("type.confirm.unload.bodyClean"),
       run: () => {
         setXml(null);
         setBaselineXml(null);
@@ -328,7 +390,7 @@ export const TypeView = memo(function TypeView(props: {
   const saveSession = () => {
     if (!xml) return;
     setBaselineXml(xml);
-    toast("Session saved - Write to file to update the YTYP on disk.", "save");
+    toast(t("type.toast.sessionSaved"), "save");
   };
 
   const markWritten = (nextXml: string, nextBinary: string | null, nextPath?: string, nextName?: string) => {
@@ -350,7 +412,7 @@ export const TypeView = memo(function TypeView(props: {
     try {
       if (format === "binary") {
         if (!binaryBase64) {
-          toast("YTYP data is missing.", true);
+          toast(t("type.toast.missingData"), true);
           return;
         }
         const updates = binaryUpdates();
@@ -359,11 +421,11 @@ export const TypeView = memo(function TypeView(props: {
           await saveYtypBinary(path, binaryBase64, updates);
           const refreshed = await readYtypFile(path);
           markWritten(refreshed.text, refreshed.binaryBase64);
-          toast(backup ? "File updated (backup created)" : "File updated", "export");
+          toast(backup ? t("type.toast.fileUpdatedBackup") : t("type.toast.fileUpdated"), "export");
         } else {
           const defaultName = fileName?.replace(/\.xml$/i, "") || "door.ytyp";
           const saved = await saveYtypBinaryAs(
-            "Write YTYP",
+            t("type.dialog.write"),
             defaultName.endsWith(".ytyp") ? defaultName : `${defaultName}.ytyp`,
             binaryBase64,
             updates,
@@ -371,23 +433,23 @@ export const TypeView = memo(function TypeView(props: {
           if (!saved) return;
           const refreshed = await readYtypFile(saved.path);
           markWritten(refreshed.text, refreshed.binaryBase64, saved.path, saved.name);
-          toast(`Wrote ${saved.name}`, "export");
+          toast(t("type.toast.wrote", { name: saved.name }), "export");
         }
       } else if (path) {
         const backup = await backupExisting(path, "type");
         await saveTextFile(path, xml);
         markWritten(xml, null);
-        toast(backup ? "File updated (backup created)" : "File updated", "export");
+        toast(backup ? t("type.toast.fileUpdatedBackup") : t("type.toast.fileUpdated"), "export");
       } else {
-        const saved = await saveTextFileAs("Write YTYP XML", fileName || "door.ytyp.xml", xml, [
-          { title: "XML", extensions: ["xml"] },
+        const saved = await saveTextFileAs(t("type.dialog.writeXml"), fileName || "door.ytyp.xml", xml, [
+          { title: t("type.dialog.filterXml"), extensions: ["xml"] },
         ]);
         if (!saved) return;
         markWritten(xml, null, saved.path, saved.name);
-        toast(`Wrote ${saved.name}`, "export");
+        toast(t("type.toast.wrote", { name: saved.name }), "export");
       }
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Write failed", true);
+      toast(error instanceof Error ? error.message : t("type.toast.writeFailed"), true);
     } finally {
       setSaving(false);
     }
@@ -420,7 +482,7 @@ export const TypeView = memo(function TypeView(props: {
 
   return (
     <WorkspaceShell
-      title="Door Type Editor"
+      title={t("type.title")}
       subtitle={fileName || undefined}
       status={hasUnsaved ? "unsaved" : null}
       actions={
@@ -435,18 +497,18 @@ export const TypeView = memo(function TypeView(props: {
               onClick={() => void writeToFile()}
             >
               <Save className="size-3.5" strokeWidth={1.75} />
-              {saving ? "Writing..." : "Write to file"}
+              {saving ? t("type.writing") : t("type.writeToFile")}
             </Button>
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="gap-1.5"
-              title="Unload this file"
+              title={t("common.unloadTitle")}
               onClick={closeFile}
             >
               <FileMinus className="size-3.5" strokeWidth={1.75} />
-              Unload
+              {t("common.unload")}
             </Button>
           </>
         ) : undefined
@@ -461,7 +523,7 @@ export const TypeView = memo(function TypeView(props: {
           <div className="grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(300px,400px)_minmax(0,1fr)] divide-x divide-line-soft xl:grid-cols-[minmax(320px,440px)_minmax(0,1fr)]">
             <div className="flex min-h-0 flex-col bg-sidebar/80">
               <div className="ide-panel-head shrink-0">
-                Archetypes
+                {t("type.panel.archetypes")}
                 <span className="flex items-center gap-2 font-normal normal-case tracking-normal">
                   <Badge variant="secondary" className="h-8 px-2 font-mono text-[11px] tabular-nums">
                     {shown.length}/{items.length}
@@ -469,13 +531,16 @@ export const TypeView = memo(function TypeView(props: {
                 </span>
               </div>
               <div className="flex shrink-0 flex-col gap-2.5 border-b border-line-soft px-2.5 py-3">
-                <SearchField placeholder="Search archetypes" value={search} onChange={setSearch} />
+                <SearchField placeholder={t("type.search")} value={search} onChange={setSearch} />
                 <SimpleSelect
                   value={filter}
                   onValueChange={setFilter}
                   options={[
-                    { value: "all", label: "All types" },
-                    ...Object.entries(DOOR_TYPES).map(([value, label]) => ({ value, label })),
+                    { value: "all", label: t("type.filter.allTypes") },
+                    ...Object.keys(DOOR_TYPES).map((value) => ({
+                      value,
+                      label: doorTypeLabel(value, t),
+                    })),
                   ]}
                 />
               </div>
@@ -493,7 +558,7 @@ export const TypeView = memo(function TypeView(props: {
                       >
                         <span className="w-full truncate">{item.name}</span>
                         <small>
-                          {DOOR_TYPES[item.specialAttribute] || "Unknown"} · {item.specialAttribute}
+                          {doorTypeLabel(item.specialAttribute, t)} · {item.specialAttribute}
                         </small>
                       </button>
                     );
@@ -512,12 +577,12 @@ export const TypeView = memo(function TypeView(props: {
                       </div>
                       {hasUnsaved ? (
                         <span className="shrink-0 rounded-md bg-warning/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide text-warning">
-                          Unsaved
+                          {t("common.unsavedBadge")}
                         </span>
                       ) : null}
                     </div>
                     <div className="mt-0.5 text-[11px] text-faint">
-                      Door type and optional flags
+                      {t("type.detail.subtitle")}
                     </div>
                   </div>
                 </div>
@@ -525,20 +590,17 @@ export const TypeView = memo(function TypeView(props: {
                 <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-5">
                   <section className="w-full shrink-0 rounded-lg border border-line-soft bg-panel/40 p-4 sm:p-5">
                     <h3 className="mb-4 text-[13px] font-medium tracking-tight text-muted-foreground">
-                      Door type
+                      {t("type.section.doorType")}
                     </h3>
                     <div className="max-w-md space-y-4">
                       <div>
                         <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">
-                          specialAttribute
+                          {t("type.field.specialAttribute")}
                         </Label>
                         <SimpleSelect
                           value={current.specialAttribute}
                           onValueChange={setDoorType}
-                          options={Object.entries(DOOR_TYPES).map(([value, label]) => ({
-                            value,
-                            label: `${label} (${value})`,
-                          }))}
+                          options={doorTypeOptions}
                         />
                       </div>
 
@@ -553,37 +615,39 @@ export const TypeView = memo(function TypeView(props: {
                           htmlFor="type-use-flags"
                           className="m-0 cursor-pointer text-[13px] font-normal text-bright"
                         >
-                          Use flags
+                          {t("type.useFlags")}
                         </Label>
                       </div>
 
                       <div>
                         <Label className="mb-1.5 mt-0 text-[11px] font-normal text-faint">
-                          Flags value
+                          {t("type.flagsValue")}
                         </Label>
                         <Input
                           readOnly
                           value={
                             current.useFlags
                               ? (() => {
-                                  const preset = ytypDoorFlagsPresetLabel(
+                                  const preset = flagsPresetLabel(
                                     Number.parseInt(current.flags, 10) || 0,
+                                    t,
                                   );
                                   return preset
-                                    ? `${preset} (${current.flags})`
+                                    ? t("type.flagsPresetValue", {
+                                        preset,
+                                        flags: current.flags,
+                                      })
                                     : current.flags;
                                 })()
                               : ""
                           }
-                          placeholder={current.useFlags ? undefined : "Off"}
+                          placeholder={current.useFlags ? undefined : t("type.flagsOff")}
                           className="font-mono tabular-nums text-muted-foreground"
                         />
                       </div>
 
                       <p className="m-0 text-[12px] leading-5 text-faint">
-                        {current.useFlags
-                          ? "Applies the Normal or Automatic flags preset for this door type. Written on Write to file."
-                          : "Write to file updates specialAttribute. Existing flags are left alone."}
+                        {current.useFlags ? t("type.help.flagsOn") : t("type.help.flagsOff")}
                       </p>
                     </div>
                   </section>
@@ -603,7 +667,7 @@ export const TypeView = memo(function TypeView(props: {
             saving={saving}
             onReset={resetChanges}
             onSave={saveSession}
-            description="Save keeps edits in this session only. Write to file updates the loaded YTYP on disk."
+            description={t("type.unsavedBar.description")}
           />
         </div>
       )}

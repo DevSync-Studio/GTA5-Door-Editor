@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils";
 
 export type WorkspaceStatus = "unsaved" | "ready" | "uptodate";
@@ -9,10 +10,10 @@ const STATUS_STYLES: Record<WorkspaceStatus, string> = {
   uptodate: "border-line-soft bg-panel-2/80 text-faint",
 };
 
-const STATUS_LABELS: Record<WorkspaceStatus, string> = {
-  unsaved: "Unsaved",
-  ready: "Ready",
-  uptodate: "Up to date",
+const STATUS_KEYS: Record<WorkspaceStatus, "app.status.unsaved" | "app.status.ready" | "app.status.uptodate"> = {
+  unsaved: "app.status.unsaved",
+  ready: "app.status.ready",
+  uptodate: "app.status.uptodate",
 };
 
 export function WorkspaceStatusBadge({
@@ -22,6 +23,7 @@ export function WorkspaceStatusBadge({
   status: WorkspaceStatus;
   className?: string;
 }) {
+  const { t } = useLocale();
   return (
     <span
       className={cn(
@@ -31,7 +33,7 @@ export function WorkspaceStatusBadge({
         className,
       )}
     >
-      {STATUS_LABELS[status]}
+      {t(STATUS_KEYS[status])}
     </span>
   );
 }

@@ -9,25 +9,27 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { CHECK_FIELDS, ROT_DIRS, SCALAR_FIELDS, TUNE_HELP } from "@/domain/constants";
+import { CHECK_FIELDS, ROT_DIRS, SCALAR_FIELDS } from "@/domain/constants";
+import type { MessageKey } from "@/domain/i18n";
 import type { TuningFields, Vec3 } from "@/domain/tuning";
+import { useLocale } from "@/hooks/useLocale";
 import { FlagTokensInput } from "@/tools/tuning/FlagTokensInput";
 import { cn } from "@/lib/utils";
 
-const FIELD_LABELS: Record<string, string> = {
-  AutoOpenRadiusModifier: "Radius modifier",
-  AutoOpenRate: "Open rate",
-  AutoOpenCosineAngleBetweenThreshold: "Cosine threshold",
-  BreakingImpulse: "Breaking impulse",
-  MassMultiplier: "Mass multiplier",
-  WeaponImpulseMultiplier: "Weapon impulse",
-  RotationLimitAngle: "Rotation limit",
-  TorqueAngularVelocityLimit: "Angular velocity limit",
-  AutoOpenCloseRateTaper: "Close rate taper",
-  UseAutoOpenTriggerBox: "Use auto-open trigger box",
-  CustomTriggerBox: "Custom trigger box",
-  BreakableByVehicle: "Breakable by vehicle",
-  ShouldLatchShut: "Latch shut",
+const FIELD_LABEL_KEYS: Record<string, MessageKey> = {
+  AutoOpenRadiusModifier: "form.label.radiusModifier",
+  AutoOpenRate: "form.label.openRate",
+  AutoOpenCosineAngleBetweenThreshold: "form.label.cosineThreshold",
+  BreakingImpulse: "form.label.breakingImpulse",
+  MassMultiplier: "form.label.massMultiplier",
+  WeaponImpulseMultiplier: "form.label.weaponImpulse",
+  RotationLimitAngle: "form.label.rotationLimit",
+  TorqueAngularVelocityLimit: "form.label.angularVelocityLimit",
+  AutoOpenCloseRateTaper: "form.label.closeRateTaper",
+  UseAutoOpenTriggerBox: "form.label.useAutoOpenTriggerBox",
+  CustomTriggerBox: "form.label.customTriggerBox",
+  BreakableByVehicle: "form.label.breakableByVehicle",
+  ShouldLatchShut: "form.label.latchShut",
 };
 
 const AUTO_SCALARS = SCALAR_FIELDS.slice(0, 3);
@@ -36,13 +38,14 @@ const PHYSICS_SCALARS = SCALAR_FIELDS.slice(3);
 export type TuningBox = { min: Vec3; max: Vec3 };
 
 function FieldInfo({ text }: { text: string }) {
+  const { t } = useLocale();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
           className="inline-flex size-4 shrink-0 items-center justify-center rounded-sm text-faint transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40"
-          aria-label="Field help"
+          aria-label={t("form.fieldHelp")}
           onClick={(event) => event.preventDefault()}
         >
           <CircleHelp className="size-3.5" strokeWidth={1.75} />
@@ -125,6 +128,21 @@ function FieldRow({ children, className }: { children: ReactNode; className?: st
   );
 }
 
+function fieldLabel(
+  key: string,
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string,
+): string {
+  const labelKey = FIELD_LABEL_KEYS[key];
+  return labelKey ? t(labelKey) : key;
+}
+
+function fieldHelp(
+  key: string,
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string,
+): string {
+  return t(`form.help.${key}` as MessageKey);
+}
+
 interface SectionProps {
   fields: TuningFields;
   onFieldsChange: (next: TuningFields) => void;
@@ -138,6 +156,7 @@ interface TriggerBoxSectionProps {
 }
 
 export function AutoOpenVolumeSection({ fields, onFieldsChange, className }: SectionProps) {
+  const { t } = useLocale();
   const setOffset = (axis: keyof Vec3, value: string) => {
     onFieldsChange({
       ...fields,
@@ -146,12 +165,12 @@ export function AutoOpenVolumeSection({ fields, onFieldsChange, className }: Sec
   };
 
   return (
-    <FormCard title="Auto-open volume" className={className}>
+    <FormCard title={t("form.section.autoOpenVolume")} className={className}>
       <div className="space-y-3">
         <div>
           <div className="mb-2 flex items-center gap-1">
-            <span className="text-[11px] font-normal text-faint">Offset</span>
-            <FieldInfo text={TUNE_HELP.AutoOpenVolumeOffset} />
+            <span className="text-[11px] font-normal text-faint">{t("form.offset")}</span>
+            <FieldInfo text={fieldHelp("AutoOpenVolumeOffset", t)} />
           </div>
           <FieldRow className="grid-cols-3">
             {(["x", "y", "z"] as const).map((axis) => (
@@ -166,7 +185,7 @@ export function AutoOpenVolumeSection({ fields, onFieldsChange, className }: Sec
         </div>
         <FieldRow>
           {AUTO_SCALARS.map((key) => (
-            <FieldCell key={key} label={FIELD_LABELS[key] ?? key} help={TUNE_HELP[key]}>
+            <FieldCell key={key} label={fieldLabel(key, t)} help={fieldHelp(key, t)}>
               <NumInput
                 value={fields[key]}
                 onChange={(event) =>
@@ -182,11 +201,12 @@ export function AutoOpenVolumeSection({ fields, onFieldsChange, className }: Sec
 }
 
 export function PhysicsSection({ fields, onFieldsChange, className }: SectionProps) {
+  const { t } = useLocale();
   return (
-    <FormCard title="Physics" className={className}>
+    <FormCard title={t("form.section.physics")} className={className}>
       <FieldRow>
         {PHYSICS_SCALARS.map((key) => (
-          <FieldCell key={key} label={FIELD_LABELS[key] ?? key} help={TUNE_HELP[key]}>
+          <FieldCell key={key} label={fieldLabel(key, t)} help={fieldHelp(key, t)}>
             <NumInput
               value={fields[key]}
               onChange={(event) =>
@@ -201,8 +221,9 @@ export function PhysicsSection({ fields, onFieldsChange, className }: SectionPro
 }
 
 export function OptionsSection({ fields, onFieldsChange, className }: SectionProps) {
+  const { t } = useLocale();
   return (
-    <FormCard title="Options" className={className}>
+    <FormCard title={t("form.section.options")} className={className}>
       <div className="grid h-full grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-x-3 sm:gap-y-2">
         {CHECK_FIELDS.map((key) => (
           <label
@@ -220,8 +241,8 @@ export function OptionsSection({ fields, onFieldsChange, className }: SectionPro
               }
             />
             <span className="flex min-w-0 flex-1 items-center gap-1.5 leading-snug">
-              <span className="min-w-0">{FIELD_LABELS[key] ?? key}</span>
-              {TUNE_HELP[key] ? <FieldInfo text={TUNE_HELP[key]} /> : null}
+              <span className="min-w-0">{fieldLabel(key, t)}</span>
+              <FieldInfo text={fieldHelp(key, t)} />
             </span>
           </label>
         ))}
@@ -231,13 +252,14 @@ export function OptionsSection({ fields, onFieldsChange, className }: SectionPro
 }
 
 export function FlagsDirectionSection({ fields, onFieldsChange, className }: SectionProps) {
+  const { t } = useLocale();
   return (
     <FormCard
-      title="Flags & direction"
+      title={t("form.section.flagsDirection")}
       className={cn("@container col-span-full p-5 sm:p-6 md:min-h-[17.5rem]", className)}
     >
       <div className="flex flex-col gap-4 @min-[40rem]:grid @min-[40rem]:grid-cols-[minmax(0,1fr)_15rem] @min-[40rem]:items-start">
-        <FieldCell className="min-w-0" label="Flags" help={TUNE_HELP.Flags}>
+        <FieldCell className="min-w-0" label={t("form.flags")} help={fieldHelp("Flags", t)}>
           <FlagTokensInput
             value={fields.Flags}
             onChange={(next) => onFieldsChange({ ...fields, Flags: next })}
@@ -245,8 +267,8 @@ export function FlagsDirectionSection({ fields, onFieldsChange, className }: Sec
         </FieldCell>
         <FieldCell
           className="min-w-0 @min-[40rem]:pt-0"
-          label="Rotation direction"
-          help={TUNE_HELP.StdDoorRotDir}
+          label={t("form.rotationDirection")}
+          help={fieldHelp("StdDoorRotDir", t)}
         >
           <SimpleSelect
             value={fields.StdDoorRotDir}
@@ -263,17 +285,18 @@ export function FlagsDirectionSection({ fields, onFieldsChange, className }: Sec
 }
 
 export function TriggerBoxSection({ box, onBoxChange, className }: TriggerBoxSectionProps) {
+  const { t } = useLocale();
   return (
-    <FormCard title="Trigger box" className={className}>
+    <FormCard title={t("form.section.triggerBox")} className={className}>
       <div className="mb-3 flex items-center gap-1.5">
-        <p className="m-0 text-[11px] leading-4 text-faint">Custom auto-open bounds</p>
-        <FieldInfo text={TUNE_HELP.TriggerBoxMinMax} />
+        <p className="m-0 text-[11px] leading-4 text-faint">{t("form.triggerBox.hint")}</p>
+        <FieldInfo text={fieldHelp("TriggerBoxMinMax", t)} />
       </div>
       <div className="space-y-4">
         {(["min", "max"] as const).map((tag) => (
           <div key={tag}>
             <div className="mb-2 text-[10px] font-medium uppercase tracking-wide text-faint">
-              {tag === "min" ? "Minimum" : "Maximum"}
+              {tag === "min" ? t("form.triggerBox.min") : t("form.triggerBox.max")}
             </div>
             <FieldRow className="grid-cols-3">
               {(["x", "y", "z"] as const).map((axis) => (
