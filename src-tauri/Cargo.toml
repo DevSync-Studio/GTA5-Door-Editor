@@ -1,7 +1,7 @@
 [package]
 name = "gta5-door-editor"
 # Keep in sync with package.json and tauri.conf.json
-version = "0.1.0"
+version = "1.0.0"
 description = "FiveM door tuning, type, audio, merge, and nametable editor"
 authors = ["DevSync Studio"]
 license = "AGPL-3.0-only"
