@@ -512,6 +512,9 @@ export const ar: Messages = {
   "preview.clearModel": "??? ???????",
   "preview.import": "???????",
   "preview.replace": "???????",
+  "preview.sampleModel": "معاينة النموذج",
+  "preview.sampleModel.title": "تحميل عيّنة لهذا النوع من الأبواب (بدون .ydr خاص)",
+  "preview.sampleBadge": "عيّنة",
   "preview.loading": "???? ???????...",
   "preview.dropOverlay": "???? {ydr} + {ytdHint}",
   "preview.empty.import": "??????? {ydr}",
@@ -562,6 +565,10 @@ export const ar: Messages = {
   "preview.toast.loadedYtdOther": "?? ????? {count} ???? ?? YTD",
   "preview.toast.dropYdrYtd": "???? .ydr ?/?? .ytd ???????.",
   "preview.toast.parseFailed": "???? ????? ?????",
+  "preview.toast.sampleMissing":
+    "لا توجد عيّنة لـ {type} بعد — أضف .ydr/.ytd تحت src/assets/preview-doors/{attr}/",
+  "preview.toast.sampleLoaded": "عيّنة · {type}",
+  "preview.toast.sampleLoadedTextures": "عيّنة · {type} · {count} قوام",
 
   "preset.back": "???????",
   "preset.modified": "??????",

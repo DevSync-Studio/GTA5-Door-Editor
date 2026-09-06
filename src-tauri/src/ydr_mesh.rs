@@ -756,14 +756,59 @@ fn parse_drawable(
     })
 }
 
+fn is_fragment_version(version: u32) -> bool {
+    // Legacy FragType = 162, Gen9 FragType = 171 (format reference: resource version tables).
+    version == 162 || version == 171
+}
+
+fn fragment_drawable_ptr(reader: &ResReader<'_>) -> Option<u64> {
+    // FragType after ResourceFileBase(16): Unknown_10/18, bounding sphere (16) → Drawable @ 0x30.
+    let raw = reader.resolve(0x5000_0000, 0x40)?;
+    let ptr = u64_le(raw, 0x30);
+    if ptr == 0 {
+        return None;
+    }
+    if (ptr & 0x5000_0000) != 0x5000_0000 || (ptr & 0x6000_0000) == 0x6000_0000 {
+        return None;
+    }
+    Some(ptr)
+}
+
+fn parse_drawable_with_fallback(
+    ptr: u64,
+    reader: &ResReader<'_>,
+    gen9: bool,
+    alt_gen9: Option<bool>,
+    resource_version: u32,
+) -> Result<YdrPreview, String> {
+    let mut preview = parse_drawable(ptr, reader, gen9, resource_version)?;
+    if let Some(alt) = alt_gen9 {
+        if let Ok(other) = parse_drawable(ptr, reader, alt, resource_version) {
+            let prefer_alt = (other.meshes.len() > preview.meshes.len())
+                || (other.textures.len() > preview.textures.len()
+                    && other.meshes.len() >= preview.meshes.len());
+            if prefer_alt {
+                preview = other;
+            }
+        }
+    }
+    Ok(preview)
+}
+
 pub fn extract_ydr_preview(data: &[u8]) -> Result<YdrPreview, String> {
-    let image = prepare_rsc7(data, "YDR")?;
+    let version = if data.len() >= 8 { u32_le(data, 4) } else { 0 };
+    let kind = if version == 162 || version == 171 {
+        "YFT"
+    } else {
+        "YDR"
+    };
+    let image = prepare_rsc7(data, kind)?;
     let reader = ResReader {
         system: &image.system,
         graphics: &image.graphics,
     };
-    let known_gen9 = image.is_gen9_ydr();
-    let known_legacy = image.version == 165;
+    let known_gen9 = image.is_gen9_ydr() || image.version == 171;
+    let known_legacy = image.version == 165 || image.version == 162;
     let gen9 = if known_legacy {
         false
     } else if known_gen9 {
@@ -772,19 +817,38 @@ pub fn extract_ydr_preview(data: &[u8]) -> Result<YdrPreview, String> {
         // Ambiguous version - prefer Gen9 for Enhanced assets.
         true
     };
+    let alt_gen9 = if !known_gen9 && !known_legacy {
+        Some(!gen9)
+    } else {
+        None
+    };
 
-    let mut preview = parse_drawable(0x5000_0000, &reader, gen9, image.version)?;
-    // Flip layout if the other mode yields more geometry / textures (ambiguous versions only).
-    if !known_gen9 && !known_legacy {
-        let alt_gen9 = !gen9;
-        if let Ok(alt) = parse_drawable(0x5000_0000, &reader, alt_gen9, image.version) {
-            let prefer_alt = (alt.meshes.len() > preview.meshes.len())
-                || (alt.textures.len() > preview.textures.len()
-                    && alt.meshes.len() >= preview.meshes.len());
-            if prefer_alt {
-                preview = alt;
-            }
-        }
+    let root = if is_fragment_version(image.version) {
+        fragment_drawable_ptr(&reader).ok_or_else(|| {
+            "No drawable found in this YFT fragment".to_string()
+        })?
+    } else {
+        0x5000_0000
+    };
+
+    parse_drawable_with_fallback(root, &reader, gen9, alt_gen9, image.version)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::extract_ydr_preview;
+    use std::path::PathBuf;
+
+    fn preview_asset(rel: &str) -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../src/assets/preview-doors")
+            .join(rel)
     }
-    Ok(preview)
+
+    #[test]
+    fn sample_normal_ydr_parses() {
+        let data = std::fs::read(preview_asset("7/v_ilev_bl_door_l.ydr")).unwrap();
+        let preview = extract_ydr_preview(&data).expect("normal door ydr");
+        assert!(!preview.meshes.is_empty());
+    }
 }

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
-import { Move3D, Focus, Pause, Play, RotateCcw, Download, X } from "lucide-react";
+import { Move3D, Focus, Pause, Play, RotateCcw, Download, X, Box } from "lucide-react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Button } from "@/components/ui/button";
 import { useNativePathDrop } from "@/hooks/useNativeDrop";
+import { useLocale } from "@/hooks/useLocale";
 import { toast } from "@/lib/toast";
-import { DOOR_TYPES } from "@/domain/constants";
+import type { MessageKey } from "@/domain/i18n";
 import {
   getDoorMotionTuning,
   getPreviewTuningVersion,
@@ -16,6 +17,10 @@ import {
   type DoorMotionTuning,
 } from "@/domain/previewTuning";
 import {
+  hasPreviewSample,
+  loadPreviewSampleBytes,
+} from "@/domain/previewSampleModels";
+import {
   parseYdrMesh,
   parseYdrMeshPath,
   parseYtdTextures,
@@ -24,15 +29,6 @@ import {
   type YdrPreview,
 } from "@/lib/files";
 import { cn } from "@/lib/utils";
-
-/**
- * Door motion pivots on drawable origin (DCC), not mesh AABB.
- *   7  Normal   - hinge; yaw (GTA Z → Three Y)
- *   5  Garage   - tip + rise
- *   8  Sliding  - toward origin on local X
- *  10 Vert.     - translate up
- *   9/12 Barrier - arm rotate on local Z
- */
 
 function isYdrPath(path: string): boolean {
   return /\.ydr$/i.test(path);
@@ -108,21 +104,61 @@ function mergeTextures(into: PreviewTexture[], extra: PreviewTexture[]): Preview
   return next;
 }
 
-function textureStatus(preview: YdrPreview): string {
+type Translate = (key: MessageKey, vars?: Record<string, string | number>) => string;
+
+function textureStatus(preview: YdrPreview, t: Translate): string {
   const n = preview.textures.length;
-  const gen9 = preview.gen9 ? " · Gen9" : "";
+  const gen9 = preview.gen9 ? t("preview.tex.gen9") : "";
   if (n === 0) {
-    return preview.missingDiffuse
-      ? `Missing textures - drop .ytd${gen9}`
-      : `No textures - drop matching .ytd${gen9}`;
+    return (
+      (preview.missingDiffuse ? t("preview.tex.missingDrop") : t("preview.tex.noneDrop")) + gen9
+    );
   }
   const emb = preview.hasEmbeddedTextures;
-  const ytd = preview.textures.some((t) => t.source === "ytd");
-  const miss = preview.missingDiffuse ? " · some missing" : "";
-  if (emb && ytd) return `${n} tex · embedded + YTD${gen9}${miss}`;
-  if (emb) return `${n} tex · embedded${gen9}${miss}`;
-  if (ytd) return `${n} tex · YTD${gen9}${miss}`;
-  return `${n} textures${gen9}${miss}`;
+  const ytd = preview.textures.some((tex) => tex.source === "ytd");
+  const miss = preview.missingDiffuse ? t("preview.tex.someMissing") : "";
+  if (emb && ytd) return t("preview.tex.embeddedYtd", { count: n }) + gen9 + miss;
+  if (emb) return t("preview.tex.embedded", { count: n }) + gen9 + miss;
+  if (ytd) return t("preview.tex.ytd", { count: n }) + gen9 + miss;
+  return t("preview.tex.count", { count: n }) + gen9 + miss;
+}
+
+function doorTypeLabel(specialAttribute: string, t: Translate): string {
+  switch (specialAttribute) {
+    case "7":
+      return t("workspace.doorType.7");
+    case "5":
+      return t("workspace.doorType.5");
+    case "8":
+      return t("workspace.doorType.8");
+    case "10":
+      return t("workspace.doorType.10");
+    case "9":
+      return t("workspace.doorType.9");
+    case "12":
+      return t("workspace.doorType.12");
+    default:
+      return t("preview.fallbackDoor");
+  }
+}
+
+function motionShortLabel(specialAttribute: string, t: Translate): string {
+  switch (specialAttribute) {
+    case "5":
+      return t("preview.motion.garage");
+    case "8":
+      return t("preview.motion.sliding");
+    case "10":
+      return t("preview.motion.vertical");
+    case "9":
+      return t("preview.motion.barrier");
+    case "12":
+      return t("preview.motion.rail");
+    case "7":
+      return t("preview.motion.normal");
+    default:
+      return t("preview.motion.unknown");
+  }
 }
 
 function doorEase(t: number): number {
@@ -136,7 +172,6 @@ type Extent = {
 };
 
 type DoorMotion = {
-  short: string;
   apply: (
     pivot: THREE.Object3D,
     amount: number,
@@ -166,7 +201,6 @@ function doorMotionFor(specialAttribute: string): DoorMotion {
   switch (specialAttribute) {
     case "5":
       return {
-        short: "Garage · tilt + rise",
         apply: (pivot, amount, ext, tuning) => {
           const H = Math.max(ext.size.y, 1e-4);
           const maxTip = openAngleRad(tuning);
@@ -200,7 +234,6 @@ function doorMotionFor(specialAttribute: string): DoorMotion {
       };
     case "8":
       return {
-        short: "Sliding · toward origin",
         apply: (pivot, amount, ext, tuning) => {
           const travel = slideTowardOriginTravel(ext.min.x, ext.max.x);
           const sign = (tuning?.rotDir ?? "pos") === "neg" ? -1 : 1;
@@ -210,7 +243,6 @@ function doorMotionFor(specialAttribute: string): DoorMotion {
       };
     case "10":
       return {
-        short: "Sliding vertical · +Y",
         apply: (pivot, amount, ext) => {
           const travel = extentAlong(ext.min.y, ext.max.y, true);
           pivot.rotation.set(0, 0, 0);
@@ -220,7 +252,6 @@ function doorMotionFor(specialAttribute: string): DoorMotion {
     case "9":
     case "12":
       return {
-        short: specialAttribute === "12" ? "Rail · arm rotate" : "Barrier · arm rotate",
         apply: (pivot, amount, _ext, tuning) => {
           pivot.position.set(0, 0, 0);
           pivot.rotation.set(0, 0, -dirSign(tuning, amount) * openAngleRad(tuning));
@@ -228,7 +259,6 @@ function doorMotionFor(specialAttribute: string): DoorMotion {
       };
     case "7":
       return {
-        short: "Normal · yaw (origin hinge)",
         apply: (pivot, amount, _ext, tuning) => {
           pivot.position.set(0, 0, 0);
           pivot.rotation.set(0, dirSign(tuning, amount) * openAngleRad(tuning), 0);
@@ -236,7 +266,6 @@ function doorMotionFor(specialAttribute: string): DoorMotion {
       };
     default:
       return {
-        short: "Unknown · yaw (fallback)",
         apply: (pivot, amount, _ext, tuning) => {
           pivot.position.set(0, 0, 0);
           pivot.rotation.set(0, dirSign(tuning, amount) * openAngleRad(tuning), 0);
@@ -492,32 +521,41 @@ export function YdrPreviewPanel({
   specialAttribute: string;
   isActive?: boolean;
 }) {
+  const { t } = useLocale();
   const [preview, setPreview] = useState<YdrPreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [playing, setPlaying] = useState(true);
+  const [isSample, setIsSample] = useState(false);
   const [frameNonce, setFrameNonce] = useState(0);
   const [tuningEpoch, setTuningEpoch] = useState(getPreviewTuningVersion);
   const inputRef = useRef<HTMLInputElement>(null);
   const depthRef = useRef(0);
   const modelNameRef = useRef(modelName);
+  const isSampleRef = useRef(false);
+  const sampleAttrRef = useRef<string | null>(null);
+  const sampleLoadIdRef = useRef(0);
   const cacheRef = useRef(new Map<string, YdrPreview | null>());
   modelNameRef.current = modelName;
+  isSampleRef.current = isSample;
 
   useEffect(() => subscribePreviewTuning(() => setTuningEpoch(getPreviewTuningVersion())), []);
 
   useEffect(() => {
     const cached = cacheRef.current.get(modelName);
     setPreview(cached ?? null);
+    setIsSample(false);
+    sampleAttrRef.current = null;
     setPlaying(true);
     setFrameNonce((n) => n + 1);
     setDragging(false);
     depthRef.current = 0;
   }, [modelName]);
 
-  const motion = doorMotionFor(specialAttribute);
-  const typeLabel = DOOR_TYPES[specialAttribute] ?? "Door";
+  const typeLabel = doorTypeLabel(specialAttribute, t);
+  const motionLabel = motionShortLabel(specialAttribute, t);
   const displayName = preview?.name || modelName;
+  const sampleAvailable = hasPreviewSample(specialAttribute);
   const expectedYdr = `${modelName}.ydr`;
   const expectedYtdHint = `${modelName}.ytd / ${modelName}+hidr.ytd`;
   const canMatchByFilename = parseHashLabel(modelName) == null;
@@ -528,37 +566,62 @@ export function YdrPreviewPanel({
     toast(
       kind === "ydr"
         ? canMatchByFilename
-          ? `Wrong YDR - use ${expectedYdr} (got ${got}).`
-          : `Wrong YDR - name must match ${modelName}.`
-        : `Wrong YTD - use ${modelName}.ytd or ${modelName}+....ytd (got ${got}).`,
+          ? t("preview.toast.wrongYdrNamed", { expected: expectedYdr, got })
+          : t("preview.toast.wrongYdrHash", { model: modelName })
+        : t("preview.toast.wrongYtd", { model: modelName, got }),
       true,
     );
-  }, [canMatchByFilename, expectedYdr, modelName]);
+  }, [canMatchByFilename, expectedYdr, modelName, t]);
 
-  const applyPreview = useCallback((next: YdrPreview) => {
-    const key = modelNameRef.current;
-    cacheRef.current.set(key, next);
+  const applyPreview = useCallback((next: YdrPreview, opts?: { sample?: boolean; quiet?: boolean }) => {
+    const sample = opts?.sample === true;
+    const quiet = opts?.quiet === true;
+    setIsSample(sample);
+    if (!sample) {
+      cacheRef.current.set(modelNameRef.current, next);
+    }
     setPreview(next);
     setPlaying(true);
     setFrameNonce(0);
-    const texNote =
-      next.textures.length > 0
-        ? ` · ${next.textures.length} texture${next.textures.length === 1 ? "" : "s"}`
-        : " · no textures (drop .ytd if external)";
-    toast(`Loaded ${next.name}${texNote}`, "info");
-  }, []);
+    if (quiet) return;
+    if (sample) {
+      toast(
+        t(
+          next.textures.length > 0
+            ? "preview.toast.sampleLoadedTextures"
+            : "preview.toast.sampleLoaded",
+          { type: next.name, count: next.textures.length },
+        ),
+        "info",
+      );
+      return;
+    }
+    if (next.textures.length > 0) {
+      toast(
+        t(
+          next.textures.length === 1
+            ? "preview.toast.loadedWithTextures"
+            : "preview.toast.loadedWithTexturesOther",
+          { name: next.name, count: next.textures.length },
+        ),
+        "info",
+      );
+    } else {
+      toast(t("preview.toast.loadedNoTextures", { name: next.name }), "info");
+    }
+  }, [t]);
 
   const applyYtd = useCallback((extra: PreviewTexture[]) => {
     setPreview((prev) => {
       if (!prev) {
-        toast("Import the .ydr first, then the .ytd.", true);
+        toast(t("preview.toast.importYdrFirst"), true);
         return prev;
       }
       const textures = mergeTextures(prev.textures, extra);
       const missingDiffuse = prev.meshes.some((m) => {
         const name = m.diffuseName;
         if (!name) return false;
-        return !textures.some((t) => t.name.toLowerCase() === name.toLowerCase());
+        return !textures.some((tex) => tex.name.toLowerCase() === name.toLowerCase());
       });
       const next = {
         ...prev,
@@ -566,16 +629,91 @@ export function YdrPreviewPanel({
         missingDiffuse,
         hasEmbeddedTextures: prev.hasEmbeddedTextures,
       };
-      cacheRef.current.set(modelNameRef.current, next);
-      toast(`Loaded ${extra.length} texture${extra.length === 1 ? "" : "s"} from YTD`, "info");
+      if (!isSampleRef.current) {
+        cacheRef.current.set(modelNameRef.current, next);
+      }
+      toast(
+        t(
+          extra.length === 1 ? "preview.toast.loadedYtd" : "preview.toast.loadedYtdOther",
+          { count: extra.length },
+        ),
+        "info",
+      );
       return next;
     });
-  }, []);
+  }, [t]);
 
   const clearPreview = useCallback(() => {
+    setIsSample(false);
+    sampleAttrRef.current = null;
     cacheRef.current.set(modelNameRef.current, null);
     setPreview(null);
   }, []);
+
+  const loadSampleModel = useCallback(async (opts?: { quiet?: boolean }) => {
+    const quiet = opts?.quiet === true;
+    if (!hasPreviewSample(specialAttribute)) {
+      if (!quiet) {
+        toast(
+          t("preview.toast.sampleMissing", { type: typeLabel, attr: specialAttribute || "?" }),
+          true,
+        );
+      }
+      return;
+    }
+
+    const requestId = ++sampleLoadIdRef.current;
+    setLoading(true);
+    try {
+      const bytes = await loadPreviewSampleBytes(specialAttribute);
+      if (requestId !== sampleLoadIdRef.current) return;
+      if (!bytes) {
+        if (!quiet) {
+          toast(
+            t("preview.toast.sampleMissing", { type: typeLabel, attr: specialAttribute || "?" }),
+            true,
+          );
+        }
+        return;
+      }
+      const next = await parseYdrMesh(bytes.mesh);
+      if (requestId !== sampleLoadIdRef.current) return;
+      let textures = next.textures;
+      if (bytes.ytd) {
+        textures = mergeTextures(textures, await parseYtdTextures(bytes.ytd));
+      }
+      if (requestId !== sampleLoadIdRef.current) return;
+      sampleAttrRef.current = specialAttribute;
+      applyPreview(
+        {
+          ...next,
+          name: typeLabel,
+          textures,
+          missingDiffuse: next.meshes.some((m) => {
+            const name = m.diffuseName;
+            if (!name) return false;
+            return !textures.some((tex) => tex.name.toLowerCase() === name.toLowerCase());
+          }),
+        },
+        { sample: true, quiet },
+      );
+    } catch (error) {
+      if (requestId !== sampleLoadIdRef.current) return;
+      toast(error instanceof Error ? error.message : t("preview.toast.parseFailed"), true);
+    } finally {
+      if (requestId === sampleLoadIdRef.current) setLoading(false);
+    }
+  }, [applyPreview, specialAttribute, t, typeLabel]);
+
+  const loadSampleModelRef = useRef(loadSampleModel);
+  loadSampleModelRef.current = loadSampleModel;
+
+  // Swap sample mesh when door type changes while a sample is already showing.
+  useEffect(() => {
+    if (!isSampleRef.current) return;
+    if (sampleAttrRef.current === specialAttribute) return;
+    void loadSampleModelRef.current({ quiet: true });
+  }, [specialAttribute]);
 
   const loadBrowserFiles = useCallback(
     async (files: File[]) => {
@@ -583,7 +721,7 @@ export function YdrPreviewPanel({
       const ydr = list.find((f) => isYdrPath(f.name));
       const ytds = list.filter((f) => isYtdPath(f.name));
       if (!ydr && ytds.length === 0) {
-        toast("Drop a .ydr and/or matching .ytd.", true);
+        toast(t("preview.toast.dropYdrYtd"), true);
         return;
       }
 
@@ -629,12 +767,12 @@ export function YdrPreviewPanel({
           applyYtd(await parseYtdTextures(bytes));
         }
       } catch (error) {
-        toast(error instanceof Error ? error.message : "Could not parse file", true);
+        toast(error instanceof Error ? error.message : t("preview.toast.parseFailed"), true);
       } finally {
         setLoading(false);
       }
     },
-    [applyPreview, applyYtd, rejectWrongModel],
+    [applyPreview, applyYtd, rejectWrongModel, t],
   );
 
   const loadNativePaths = useCallback(
@@ -642,7 +780,7 @@ export function YdrPreviewPanel({
       const ydr = paths.find(isYdrPath);
       const ytds = paths.filter(isYtdPath);
       if (!ydr && ytds.length === 0) {
-        toast("Drop a .ydr and/or matching .ytd.", true);
+        toast(t("preview.toast.dropYdrYtd"), true);
         return;
       }
 
@@ -678,12 +816,12 @@ export function YdrPreviewPanel({
           applyYtd(await parseYtdTexturesPath(ytd));
         }
       } catch (error) {
-        toast(error instanceof Error ? error.message : "Could not parse file", true);
+        toast(error instanceof Error ? error.message : t("preview.toast.parseFailed"), true);
       } finally {
         setLoading(false);
       }
     },
-    [applyPreview, applyYtd, rejectWrongModel],
+    [applyPreview, applyYtd, rejectWrongModel, t],
   );
 
   useNativePathDrop({
@@ -707,17 +845,19 @@ export function YdrPreviewPanel({
       <header className="flex shrink-0 items-center gap-3 border-b border-line-soft px-3 py-2.5 sm:px-4">
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <h3 className="m-0 text-[13px] font-semibold tracking-tight text-bright">Preview</h3>
+            <h3 className="m-0 text-[13px] font-semibold tracking-tight text-bright">{t("preview.title")}</h3>
             {preview ? (
               <span className="truncate font-mono text-[11px] text-faint">{displayName}</span>
+            ) : null}
+            {preview && isSample ? (
+              <span className="rounded border border-line-soft bg-panel-2/80 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-faint">
+                {t("preview.sampleBadge")}
+              </span>
             ) : null}
           </div>
           {!preview ? (
             <p className="m-0 mt-0.5 truncate text-[11px] text-faint">
-              Only accepts{" "}
-              <span className="font-mono text-muted-foreground">{expectedYdr}</span>
-              {" + "}
-              <span className="font-mono text-muted-foreground">{expectedYtdHint}</span>
+              {t("preview.accepts", { ydr: expectedYdr, ytdHint: expectedYtdHint })}
             </p>
           ) : null}
         </div>
@@ -730,8 +870,8 @@ export function YdrPreviewPanel({
                 size="icon-sm"
                 variant="ghost"
                 className="text-muted-foreground"
-                title={playing ? "Pause" : "Play"}
-                aria-label={playing ? "Pause" : "Play"}
+                title={playing ? t("preview.pause") : t("preview.play")}
+                aria-label={playing ? t("preview.pause") : t("preview.play")}
                 onClick={() => setPlaying((p) => !p)}
               >
                 {playing ? (
@@ -745,8 +885,8 @@ export function YdrPreviewPanel({
                 size="icon-sm"
                 variant="ghost"
                 className="text-muted-foreground"
-                title="Reset camera"
-                aria-label="Reset camera"
+                title={t("preview.resetCamera")}
+                aria-label={t("preview.resetCamera")}
                 onClick={() => setFrameNonce((n) => n + 1)}
               >
                 <Focus className="size-3.5" strokeWidth={1.75} />
@@ -756,14 +896,31 @@ export function YdrPreviewPanel({
                 size="icon-sm"
                 variant="ghost"
                 className="text-muted-foreground"
-                title="Clear model"
-                aria-label="Clear model"
+                title={t("preview.clearModel")}
+                aria-label={t("preview.clearModel")}
                 onClick={clearPreview}
               >
                 <X className="size-3.5" strokeWidth={1.75} />
               </Button>
             </div>
           ) : null}
+
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={loading}
+            className={cn("gap-1.5", !sampleAvailable && "text-muted-foreground")}
+            title={t("preview.sampleModel.title")}
+            onClick={() => void loadSampleModel()}
+          >
+            {loading ? (
+              <RotateCcw className="size-3.5 animate-spin" strokeWidth={1.75} />
+            ) : (
+              <Box className="size-3.5" strokeWidth={1.75} />
+            )}
+            {t("preview.sampleModel")}
+          </Button>
 
           <Button
             type="button"
@@ -778,7 +935,7 @@ export function YdrPreviewPanel({
             ) : (
               <Download className="size-3.5" strokeWidth={1.75} />
             )}
-            {loading ? "Loading..." : preview ? "Replace" : "Import"}
+            {loading ? t("preview.loading") : preview ? t("preview.replace") : t("preview.import")}
           </Button>
         </div>
       </header>
@@ -827,7 +984,7 @@ export function YdrPreviewPanel({
             {dragging ? (
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-primary/15 backdrop-blur-[1px]">
                 <p className="m-0 rounded-lg border border-primary/40 bg-panel/90 px-4 py-2 text-[13px] font-medium text-primary">
-                  Drop {expectedYdr} + {expectedYtdHint}
+                  {t("preview.dropOverlay", { ydr: expectedYdr, ytdHint: expectedYtdHint })}
                 </p>
               </div>
             ) : null}
@@ -838,36 +995,36 @@ export function YdrPreviewPanel({
                   {typeLabel}
                   <span className="ml-1 opacity-60">({specialAttribute})</span>
                 </Chip>
-                <Chip>{motion.short}</Chip>
-                <Chip>{textureStatus(preview)}</Chip>
+                <Chip>{motionLabel}</Chip>
+                <Chip>{textureStatus(preview, t)}</Chip>
                 {motionTuning ? (
                   <Chip>
-                    Tuning · {motionTuning.tuningName}
+                    {t("preview.tuningChip", { name: motionTuning.tuningName })}
                     {motionTuning.rotationLimitAngle > 0
                       ? ` · ${(motionTuning.rotationLimitAngle * (180 / Math.PI)).toFixed(0)}°`
-                      : " · 90° def"}
-                    {` · rate ${motionTuning.autoOpenRate}`}
-                    {` · ω ${motionTuning.angularVelocityLimit}`}
-                    {motionTuning.closeRateTaper ? " · taper" : ""}
+                      : ` · ${t("preview.tuningDefaultAngle")}`}
+                    {` · ${t("preview.tuningRate", { rate: motionTuning.autoOpenRate })}`}
+                    {` · ${t("preview.tuningOmega", { omega: motionTuning.angularVelocityLimit })}`}
+                    {motionTuning.closeRateTaper ? ` · ${t("preview.tuningTaper")}` : ""}
                   </Chip>
                 ) : (
-                  <Chip>No doortuning linked</Chip>
+                  <Chip>{t("preview.noTuning")}</Chip>
                 )}
-                {!playing ? <Chip className="text-warning">Paused</Chip> : null}
+                {!playing ? <Chip className="text-warning">{t("preview.paused")}</Chip> : null}
               </div>
             </div>
 
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-2 p-3">
               <div className="flex items-center gap-2 rounded-md border border-white/8 bg-black/45 px-2 py-1 text-[10px] text-white/65 backdrop-blur-sm">
                 <span className="inline-block size-1.5 rounded-full bg-[#ffcc66]" />
-                Origin / hinge
+                {t("preview.origin")}
                 <span className="mx-0.5 text-white/25">·</span>
                 <span className="text-[#ff6b6b]">X</span>
                 <span className="text-[#69db7c]">Y</span>
                 <span className="text-[#74c0fc]">Z</span>
               </div>
               <div className="rounded-md border border-white/8 bg-black/45 px-2 py-1 text-[10px] text-white/45 backdrop-blur-sm">
-                Select both · {expectedYdr} · {expectedYtdHint}
+                {t("preview.selectBoth", { ydr: expectedYdr, ytdHint: expectedYtdHint })}
               </div>
             </div>
           </>
@@ -895,12 +1052,11 @@ export function YdrPreviewPanel({
             <div className="space-y-1.5">
               <p className="m-0 text-[13px] font-medium text-bright">
                 {dragging
-                  ? `Drop ${expectedYdr} and/or ${expectedYtdHint}`
-                  : `Import ${expectedYdr}`}
+                  ? t("preview.empty.drop", { ydr: expectedYdr, ytdHint: expectedYtdHint })
+                  : t("preview.empty.import", { ydr: expectedYdr })}
               </p>
               <p className="m-0 max-w-[340px] text-[11px] leading-relaxed text-faint">
-                Multi-select the .ydr and .ytd together, or drop both. Accepts{" "}
-                {expectedYtdHint}. Sibling YTDs auto-load from disk.
+                {t("preview.empty.hint", { ytdHint: expectedYtdHint })}
               </p>
             </div>
           </button>

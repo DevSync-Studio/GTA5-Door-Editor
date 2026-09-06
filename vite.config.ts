@@ -35,6 +35,7 @@ export default defineConfig({
       ignored: ["**/src-tauri/**"],
     },
   },
+  assetsInclude: ["**/*.ydr", "**/*.ytd", "**/*.yft"],
   build: {
     target: "es2020",
     sourcemap: false,

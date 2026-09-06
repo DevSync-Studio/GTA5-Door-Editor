@@ -512,6 +512,9 @@ export const ko: Messages = {
   "preview.clearModel": "?? ???",
   "preview.import": "????",
   "preview.replace": "???",
+  "preview.sampleModel": "모델 미리보기",
+  "preview.sampleModel.title": "이 문 유형의 번들 샘플 로드 (자체 .ydr 불필요)",
+  "preview.sampleBadge": "샘플",
   "preview.loading": "?? ?...",
   "preview.dropOverlay": "{ydr} + {ytdHint} ??",
   "preview.empty.import": "{ydr} ????",
@@ -562,6 +565,10 @@ export const ko: Messages = {
   "preview.toast.loadedYtdOther": "YTD?? ??? {count}? ???",
   "preview.toast.dropYdrYtd": ".ydr ?/?? ???? .ytd? ????.",
   "preview.toast.parseFailed": "??? ?? ??? ? ????",
+  "preview.toast.sampleMissing":
+    "{type}용 샘플이 아직 없습니다 — src/assets/preview-doors/{attr}/에 .ydr/.ytd 추가",
+  "preview.toast.sampleLoaded": "샘플 · {type}",
+  "preview.toast.sampleLoadedTextures": "샘플 · {type} · {count} 텍스처",
 
   "preset.back": "?",
   "preset.modified": "???",

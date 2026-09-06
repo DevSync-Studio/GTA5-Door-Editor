@@ -512,6 +512,9 @@ export const tr: Messages = {
   "preview.clearModel": "Modeli temizle",
   "preview.import": "I�e aktar",
   "preview.replace": "Degistir",
+  "preview.sampleModel": "Modeli önizle",
+  "preview.sampleModel.title": "Bu kapı türü için örnek yükle (kendi .ydr gerekmez)",
+  "preview.sampleBadge": "Örnek",
   "preview.loading": "Y�kleniyor...",
   "preview.dropOverlay": "{ydr} + {ytdHint} birak",
   "preview.empty.import": "{ydr} i�e aktar",
@@ -562,6 +565,10 @@ export const tr: Messages = {
   "preview.toast.loadedYtdOther": "YTD'den {count} doku y�klendi",
   "preview.toast.dropYdrYtd": ".ydr ve/veya eslesen .ytd birakin.",
   "preview.toast.parseFailed": "Dosya ayristirilamadi",
+  "preview.toast.sampleMissing":
+    "{type} için henüz örnek yok — src/assets/preview-doors/{attr}/ altına .ydr/.ytd ekleyin",
+  "preview.toast.sampleLoaded": "Örnek · {type}",
+  "preview.toast.sampleLoadedTextures": "Örnek · {type} · {count} doku",
 
   "preset.back": "Kapilar",
   "preset.modified": "Degistirildi",

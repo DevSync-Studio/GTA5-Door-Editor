@@ -511,6 +511,9 @@ export const es: Messages = {
   "preview.clearModel": "Quitar modelo",
   "preview.import": "Importar",
   "preview.replace": "Reemplazar",
+  "preview.sampleModel": "Vista previa del modelo",
+  "preview.sampleModel.title": "Cargar muestra del tipo de puerta (sin .ydr propio)",
+  "preview.sampleBadge": "Muestra",
   "preview.loading": "Cargando...",
   "preview.dropOverlay": "Soltar {ydr} + {ytdHint}",
   "preview.empty.import": "Importar {ydr}",
@@ -561,6 +564,10 @@ export const es: Messages = {
   "preview.toast.loadedYtdOther": "{count} texturas cargadas desde YTD",
   "preview.toast.dropYdrYtd": "Suelta un .ydr y/o el .ytd correspondiente.",
   "preview.toast.parseFailed": "No se pudo analizar el archivo",
+  "preview.toast.sampleMissing":
+    "Aún no hay modelo de muestra para {type} — añade .ydr/.ytd en src/assets/preview-doors/{attr}/",
+  "preview.toast.sampleLoaded": "Muestra · {type}",
+  "preview.toast.sampleLoadedTextures": "Muestra · {type} · {count} texturas",
 
   "preset.back": "Puertas",
   "preset.modified": "Modificado",

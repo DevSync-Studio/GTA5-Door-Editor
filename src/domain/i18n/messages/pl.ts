@@ -512,6 +512,9 @@ export const pl: Messages = {
   "preview.clearModel": "Wyczysc model",
   "preview.import": "Importuj",
   "preview.replace": "Zastap",
+  "preview.sampleModel": "Podgląd modelu",
+  "preview.sampleModel.title": "Wczytaj próbkę dla tego typu drzwi (własny .ydr niepotrzebny)",
+  "preview.sampleBadge": "Próbka",
   "preview.loading": "Ladowanie...",
   "preview.dropOverlay": "Upusc {ydr} + {ytdHint}",
   "preview.empty.import": "Importuj {ydr}",
@@ -562,6 +565,10 @@ export const pl: Messages = {
   "preview.toast.loadedYtdOther": "Zaladowano {count} tekstur z YTD",
   "preview.toast.dropYdrYtd": "Upusc .ydr i/lub pasujace .ytd.",
   "preview.toast.parseFailed": "Nie udalo sie przeanalizowac pliku",
+  "preview.toast.sampleMissing":
+    "Brak próbki dla {type} — dodaj .ydr/.ytd w src/assets/preview-doors/{attr}/",
+  "preview.toast.sampleLoaded": "Próbka · {type}",
+  "preview.toast.sampleLoadedTextures": "Próbka · {type} · {count} tekstur",
 
   "preset.back": "Drzwi",
   "preset.modified": "Zmodyfikowane",

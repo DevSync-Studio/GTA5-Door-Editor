@@ -472,6 +472,9 @@ export const en = {
   "preview.clearModel": "Clear model",
   "preview.import": "Import",
   "preview.replace": "Replace",
+  "preview.sampleModel": "Preview Model",
+  "preview.sampleModel.title": "Load bundled sample for this door type (no own .ydr needed)",
+  "preview.sampleBadge": "Sample",
   "preview.loading": "Loading...",
   "preview.dropOverlay": "Drop {ydr} + {ytdHint}",
   "preview.empty.import": "Import {ydr}",
@@ -516,6 +519,10 @@ export const en = {
   "preview.toast.loadedYtdOther": "Loaded {count} textures from YTD",
   "preview.toast.dropYdrYtd": "Drop a .ydr and/or matching .ytd.",
   "preview.toast.parseFailed": "Could not parse file",
+  "preview.toast.sampleMissing":
+    "No sample model for {type} yet — add .ydr/.ytd under src/assets/preview-doors/{attr}/",
+  "preview.toast.sampleLoaded": "Sample · {type}",
+  "preview.toast.sampleLoadedTextures": "Sample · {type} · {count} textures",
 
   // preset.*
   "preset.back": "Doors",

@@ -512,6 +512,9 @@ export const ptBR: Messages = {
   "preview.clearModel": "Limpar modelo",
   "preview.import": "Importar",
   "preview.replace": "Substituir",
+  "preview.sampleModel": "Pré-visualizar modelo",
+  "preview.sampleModel.title": "Carregar amostra deste tipo de porta (sem .ydr próprio)",
+  "preview.sampleBadge": "Amostra",
   "preview.loading": "Carregando...",
   "preview.dropOverlay": "Soltar {ydr} + {ytdHint}",
   "preview.empty.import": "Importar {ydr}",
@@ -562,6 +565,10 @@ export const ptBR: Messages = {
   "preview.toast.loadedYtdOther": "{count} texturas carregadas do YTD",
   "preview.toast.dropYdrYtd": "Solte um .ydr e/ou o .ytd correspondente.",
   "preview.toast.parseFailed": "N�o foi poss�vel analisar o arquivo",
+  "preview.toast.sampleMissing":
+    "Ainda sem modelo de amostra para {type} — adicione .ydr/.ytd em src/assets/preview-doors/{attr}/",
+  "preview.toast.sampleLoaded": "Amostra · {type}",
+  "preview.toast.sampleLoadedTextures": "Amostra · {type} · {count} texturas",
 
   "preset.back": "Portas",
   "preset.modified": "Modificado",

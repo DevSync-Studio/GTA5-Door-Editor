@@ -474,6 +474,9 @@ export const hinglish: Messages = {
   "preview.clearModel": "Model clear karo",
   "preview.import": "Import",
   "preview.replace": "Replace",
+  "preview.sampleModel": "Preview Model",
+  "preview.sampleModel.title": "Is door type ka bundled sample load karo (apna .ydr nahi chahiye)",
+  "preview.sampleBadge": "Sample",
   "preview.loading": "Loading...",
   "preview.dropOverlay": "{ydr} + {ytdHint} drop karo",
   "preview.empty.import": "{ydr} Import karo",
@@ -518,6 +521,10 @@ export const hinglish: Messages = {
   "preview.toast.loadedYtdOther": "YTD se {count} textures load hui",
   "preview.toast.dropYdrYtd": ".ydr aur/ya matching .ytd drop karo.",
   "preview.toast.parseFailed": "File parse nahi ho payi",
+  "preview.toast.sampleMissing":
+    "{type} ke liye abhi sample nahi — src/assets/preview-doors/{attr}/ mein .ydr/.ytd add karo",
+  "preview.toast.sampleLoaded": "Sample · {type}",
+  "preview.toast.sampleLoadedTextures": "Sample · {type} · {count} textures",
 
   // preset.*
   "preset.back": "Doors",

@@ -512,6 +512,9 @@ export const ja: Messages = {
   "preview.clearModel": "???????",
   "preview.import": "?????",
   "preview.replace": "??",
+  "preview.sampleModel": "モデルをプレビュー",
+  "preview.sampleModel.title": "このドアタイプのサンプルを読み込み（独自の .ydr 不要）",
+  "preview.sampleBadge": "サンプル",
   "preview.loading": "?????...",
   "preview.dropOverlay": "{ydr} + {ytdHint} ?????",
   "preview.empty.import": "{ydr} ??????",
@@ -562,6 +565,10 @@ export const ja: Messages = {
   "preview.toast.loadedYtdOther": "YTD ??????? {count} ????????",
   "preview.toast.dropYdrYtd": ".ydr ???/??????? .ytd ????????????",
   "preview.toast.parseFailed": "???????????????",
+  "preview.toast.sampleMissing":
+    "{type} のサンプルがまだありません — src/assets/preview-doors/{attr}/ に .ydr/.ytd を追加してください",
+  "preview.toast.sampleLoaded": "サンプル · {type}",
+  "preview.toast.sampleLoadedTextures": "サンプル · {type} · {count} テクスチャ",
 
   "preset.back": "??",
   "preset.modified": "????",

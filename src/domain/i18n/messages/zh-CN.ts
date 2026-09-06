@@ -512,6 +512,9 @@ export const zhCN: Messages = {
   "preview.clearModel": "????",
   "preview.import": "??",
   "preview.replace": "??",
+  "preview.sampleModel": "预览模型",
+  "preview.sampleModel.title": "加载该门类型的内置示例（无需自己的 .ydr）",
+  "preview.sampleBadge": "示例",
   "preview.loading": "???...",
   "preview.dropOverlay": "?? {ydr} + {ytdHint}",
   "preview.empty.import": "?? {ydr}",
@@ -562,6 +565,10 @@ export const zhCN: Messages = {
   "preview.toast.loadedYtdOther": "?? YTD ?? {count} ???",
   "preview.toast.dropYdrYtd": "?? .ydr ?/???? .ytd?",
   "preview.toast.parseFailed": "??????",
+  "preview.toast.sampleMissing":
+    "尚无 {type} 的示例模型 — 请将 .ydr/.ytd 放到 src/assets/preview-doors/{attr}/",
+  "preview.toast.sampleLoaded": "示例 · {type}",
+  "preview.toast.sampleLoadedTextures": "示例 · {type} · {count} 张贴图",
 
   "preset.back": "?",
   "preset.modified": "???",

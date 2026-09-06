@@ -512,6 +512,9 @@ export const de: Messages = {
   "preview.clearModel": "Modell l�schen",
   "preview.import": "Importieren",
   "preview.replace": "Ersetzen",
+  "preview.sampleModel": "Modellvorschau",
+  "preview.sampleModel.title": "Gebündeltes Beispiel für diesen Türtyp laden (kein eigenes .ydr nötig)",
+  "preview.sampleBadge": "Beispiel",
   "preview.loading": "Wird geladen...",
   "preview.dropOverlay": "{ydr} + {ytdHint} ablegen",
   "preview.empty.import": "{ydr} importieren",
@@ -562,6 +565,10 @@ export const de: Messages = {
   "preview.toast.loadedYtdOther": "{count} Texturen aus YTD geladen",
   "preview.toast.dropYdrYtd": ".ydr und/oder passendes .ytd ablegen.",
   "preview.toast.parseFailed": "Datei konnte nicht geparst werden",
+  "preview.toast.sampleMissing":
+    "Noch kein Beispielmodell für {type} — .ydr/.ytd unter src/assets/preview-doors/{attr}/ hinzufügen",
+  "preview.toast.sampleLoaded": "Beispiel · {type}",
+  "preview.toast.sampleLoadedTextures": "Beispiel · {type} · {count} Texturen",
 
   "preset.back": "T�ren",
   "preset.modified": "Ge�ndert",

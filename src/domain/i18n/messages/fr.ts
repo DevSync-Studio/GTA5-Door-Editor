@@ -513,6 +513,9 @@ export const fr: Messages = {
   "preview.clearModel": "Effacer le mod�le",
   "preview.import": "Importer",
   "preview.replace": "Remplacer",
+  "preview.sampleModel": "Aperçu du modèle",
+  "preview.sampleModel.title": "Charger l'échantillon pour ce type de porte (sans .ydr perso)",
+  "preview.sampleBadge": "Échantillon",
   "preview.loading": "Chargement...",
   "preview.dropOverlay": "D�poser {ydr} + {ytdHint}",
   "preview.empty.import": "Importer {ydr}",
@@ -563,6 +566,10 @@ export const fr: Messages = {
   "preview.toast.loadedYtdOther": "{count} textures charg�es depuis YTD",
   "preview.toast.dropYdrYtd": "D�posez un .ydr et/ou le .ytd correspondant.",
   "preview.toast.parseFailed": "Impossible d'analyser le fichier",
+  "preview.toast.sampleMissing":
+    "Pas encore d'échantillon pour {type} — ajoutez .ydr/.ytd sous src/assets/preview-doors/{attr}/",
+  "preview.toast.sampleLoaded": "Échantillon · {type}",
+  "preview.toast.sampleLoadedTextures": "Échantillon · {type} · {count} textures",
 
   "preset.back": "Portes",
   "preset.modified": "Modifi�",

@@ -512,6 +512,9 @@ export const it: Messages = {
   "preview.clearModel": "Cancella modello",
   "preview.import": "Importa",
   "preview.replace": "Sostituisci",
+  "preview.sampleModel": "Anteprima modello",
+  "preview.sampleModel.title": "Carica campione per questo tipo di porta (senza .ydr proprio)",
+  "preview.sampleBadge": "Campione",
   "preview.loading": "Caricamento...",
   "preview.dropOverlay": "Trascina {ydr} + {ytdHint}",
   "preview.empty.import": "Importa {ydr}",
@@ -562,6 +565,10 @@ export const it: Messages = {
   "preview.toast.loadedYtdOther": "Caricate {count} texture da YTD",
   "preview.toast.dropYdrYtd": "Trascina un .ydr e/o il .ytd corrispondente.",
   "preview.toast.parseFailed": "Impossibile analizzare il file",
+  "preview.toast.sampleMissing":
+    "Nessun campione per {type} — aggiungi .ydr/.ytd in src/assets/preview-doors/{attr}/",
+  "preview.toast.sampleLoaded": "Campione · {type}",
+  "preview.toast.sampleLoadedTextures": "Campione · {type} · {count} texture",
 
   "preset.back": "Porte",
   "preset.modified": "Modificato",
